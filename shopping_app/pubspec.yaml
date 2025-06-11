@@ -35,6 +35,22 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  #Google Sign In
+  google_sign_in: ^6.2.0
+
+  #HTTP requests to Fast API
+  http: ^1.4.0
+
+  #Local Storage
+  shared_preferences: ^2.1.0
+
+  #State Management
+  #Provider is a wrapper around InheritedWidget, which makes it easier to
+  #manage state in Flutter applications.
+  english_words: ^4.0.0
+  
+  provider: ^6.1.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -44,7 +60,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
