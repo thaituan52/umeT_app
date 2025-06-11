@@ -1,22 +1,41 @@
 # umeT_app
-For this project, I want to apply API & database to my project, and I choose 
-Tech Stack:
 
-Flutter frontend
+A full-stack Flutter application with FastAPI backend, MySQL database, and passwordless email authentication.
 
-FastAPI backend (Python)
+---
 
-MySQL database
+## 🛠 Tech Stack
 
-Email OTP verification (free Gmail SMTP or SendGrid)
+- **Frontend:** Flutter
+- **Backend:** FastAPI (Python)
+- **Database:** MySQL
+- **Authentication:** Passwordless Email OTP (Gmail SMTP or SendGrid)
 
-1/ Login Page:
-Considering imitating Temu system, I decide to go with the passwordless authenticatrion when using gmail (phone is not practical at the moment since sms costs) and using third parties like Facebook, Gooogle, etc.
+---
 
-note: 
+## ✨ Features
 
-for checking api : 
-uvicorn shopping_app.lib.backend_api.backend:app --reload 
-then check on :
-http://127.0.0.1:8000/docs#/
+- Passwordless login using Email OTP (inspired by Temu system)
+- User authentication without phone number (to avoid SMS costs)
+- Google/Facebook login integration (future enhancement)
+- API-first architecture with clear backend separation
+- Secure handling of secrets via `.env` file
 
+---
+
+## 📂 Project Structure
+
+```bash
+umeT_app/
+├── shopping_app/
+│   └── lib/
+│       └── backend_api/
+│           └── backend.py   # FastAPI backend code
+|       └── cus_wid
+|       └── login
+|       └── main.dart
+├── sql/                     # SQL scripts & migrations
+├── examples/                # Example/test data (optional)
+├── .env                      # Environment variables (not committed)
+├── .gitignore
+└── README.md
