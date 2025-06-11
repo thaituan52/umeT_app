@@ -12,3 +12,11 @@ Email OTP verification (free Gmail SMTP or SendGrid)
 
 1/ Login Page:
 Considering imitating Temu system, I decide to go with the passwordless authenticatrion when using gmail (phone is not practical at the moment since sms costs) and using third parties like Facebook, Gooogle, etc.
+
+note: 
+
+for checking api : 
+uvicorn shopping_app.lib.backend_api.backend:app --reload 
+then check on :
+http://127.0.0.1:8000/docs#/
+
