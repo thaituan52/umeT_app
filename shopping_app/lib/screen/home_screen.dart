@@ -11,8 +11,8 @@ class HomeScreen extends StatelessWidget {
   // Google Sign-out method
   Future<bool> signOutFromGoogle() async {
     try {
-      await FirebaseAuth.instance.signOut();
       await GoogleSignIn().signOut();
+      await FirebaseAuth.instance.signOut();
       return true;
     } on Exception catch (_) {
       return false;
@@ -27,7 +27,7 @@ class HomeScreen extends StatelessWidget {
         if (context.mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => LoginScreen()),
+            MaterialPageRoute(builder: (context) => LoginScreen()), //may need to adjust this on both platforms
           );
         }
       } else {

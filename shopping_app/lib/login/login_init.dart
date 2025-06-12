@@ -27,25 +27,19 @@ class _LoginScreenState extends State<LoginScreen> {
         case 'Apple':
           // Handle Apple sign-in
           print('Apple sign-in selected');
-          break;
         case 'Google':
           // Handle Google sign-in
           _handleGoogleSignIn();
-          break;
           // Implement Google Sign-In logic here
-          break;
         case 'Facebook':
           // Handle Facebook sign-in
           print('Facebook sign-in selected');
-          break;
         case 'Email':
           // Handle Email sign-in
           print('Email sign-in selected');
-          break;
         case 'Phone':
           // Handle Phone sign-in
           print('Phone sign-in selected');
-          break;
         default:
           print('Unknown method selected');
       }
@@ -67,10 +61,11 @@ class _LoginScreenState extends State<LoginScreen> {
       if (userCredential != null && userCredential.user != null) {
         // Sign-in successful
         _showMessage('Signed in as ${userCredential.user!.email}');
+        //print(userCredential.toString()); debug only
         if (mounted) {
           Navigator.pushReplacement(
           context,
-          MaterialPageRoute( builder : (context) => HomeScreen( // Replace with your home screen widget
+          MaterialPageRoute( builder : (context) => HomeScreen( //may need to adjust this on both platforms
               user: userCredential.user!,
             ),
           ),
