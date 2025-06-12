@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_app/cus_wid/login_button.dart';
+import 'package:firebase_auth/firebase_auth.dart'; 
+import 'package:google_sign_in/google_sign_in.dart'; //Implement Google Sign-In
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,25 +12,124 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   String? _selectedMethod;
+  bool _isLoading = false; // Used to check if the sign-in is loading or not
   
   void _onMethodSelected(String? method) {
     setState(() {
       _selectedMethod = method;
+      _isLoading = true;
     });
     print('Selected method: $method');
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Selected method: $method'),
-        duration: Duration(milliseconds: 150),
-        backgroundColor: Colors.blue,
-      ),
-    );
-
-    // Here you can handle the login logic for the selected method
+    try {
+      switch (method) {
+        case 'Apple':
+          // Handle Apple sign-in
+          print('Apple sign-in selected');
+          break;
+        case 'Google':
+          // Handle Google sign-in
+          _handleGoogleSignIn();
+          break;
+          // Implement Google Sign-In logic here
+          break;
+        case 'Facebook':
+          // Handle Facebook sign-in
+          print('Facebook sign-in selected');
+          break;
+        case 'Email':
+          // Handle Email sign-in
+          print('Email sign-in selected');
+          break;
+        case 'Phone':
+          // Handle Phone sign-in
+          print('Phone sign-in selected');
+          break;
+        default:
+          print('Unknown method selected');
+      }
+    } catch (e) {
+      _showMessage('Error handling $method sign-in: $e');
+    } finally {
+      setState(() {
+      _isLoading = false; // Reset loading state after handling the method
+      });
+    }
     //Should make a way to log in via the selected method
   }
 
+  // Handle Google Sign-In
+  void _handleGoogleSignIn() async {
+    try {
+      final UserCredential? userCredential = await signInWithGoogle();
+
+      if (userCredential != null && userCredential.user != null) {
+        // Sign-in successful
+        _showMessage('Signed in as ${userCredential.user!.email}');
+        if (mounted) {
+          Navigator.pushReplacement(
+          context,
+          MaterialPageRoute( builder : (context) => HomeScreen( // Replace with your home screen widget
+              user: userCredential.user!,
+            ),
+          ),
+        ); 
+        }
+
+      } else {
+        // Sign-in failed
+        _showMessage('Google sign-in failed');
+      }
+    } catch (e) {
+      // Handle sign-in error
+      _showMessage('Error signing in with Google: $e');
+    }
+  }
+
+
+  // Sign in with Google
+  Future<UserCredential?> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleAccount = await GoogleSignIn().signIn();
+
+      if (googleAccount == null) {
+        // User cancelled the sign-in
+        return null;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleAccount.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      return await FirebaseAuth.instance.signInWithCredential(credential);
+    } on Exception catch (e) {
+      // Handle sign-in error
+      print('Error signing in with Google: $e');
+      return null;
+    }
+  }
+
+  // Future<bool> signOutFromGoogle() async {
+  //   try {
+  //     await FirebaseAuth.instance.signOut();
+  //     await GoogleSignIn().signOut();
+  //     return true; // Sign-out successful
+  //   } catch (e) {
+  //     print('Error signing out from Google: $e');
+  //     return false; // Sign-out failed
+  //   }
+  // }
+
+  // Show a message in a SnackBar
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,6 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
             onMethodSelected: _onMethodSelected,
             icon: Icons.apple,
             iconColor: Colors.white,
+            isLoading: _isLoading && _selectedMethod == 'Apple'
           ),
 
           SizedBox(height: 16.0),
@@ -101,6 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
             onMethodSelected: _onMethodSelected,
             icon: Icons.g_mobiledata,
             iconColor: Colors.accents[3], // Use a color from the accent palette
+            isLoading: _isLoading && _selectedMethod == 'Google', // Show loading state for Google sign-in
           ),
 
           SizedBox(height: 16.0),
@@ -111,6 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
             onMethodSelected: _onMethodSelected,
             icon: Icons.facebook,
             iconColor: Colors.blue,
+            isLoading: _isLoading && _selectedMethod == 'Facebook', // Show loading state for Facebook sign-in
           ),
 
           SizedBox(height: 16.0),
@@ -121,6 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
             onMethodSelected: _onMethodSelected,
             icon: Icons.email,
             iconColor: Colors.red,
+            isLoading: _isLoading && _selectedMethod == 'Email', // Show loading state for Email sign-in
           ),
 
           SizedBox(height: 16.0),
@@ -131,6 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
             onMethodSelected: _onMethodSelected,
             icon: Icons.phone,
             iconColor: Colors.green,
+            isLoading: _isLoading && _selectedMethod == 'Phone', // Show loading state for Phone sign-in
           ),
 
           SizedBox(height: 24),
@@ -199,3 +305,179 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
+
+// Vibe coding: Placeholder for HomeScreen widget
+class HomeScreen extends StatelessWidget {
+  final User user;
+
+  const HomeScreen({super.key, required this.user});
+
+  // Google Sign-out method
+  Future<bool> signOutFromGoogle() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      await GoogleSignIn().signOut();
+      return true;
+    } on Exception catch (_) {
+      return false;
+    }
+  }
+
+  void _handleLogout(BuildContext context) async {
+    try {
+      bool success = await signOutFromGoogle();
+      if (success) {
+        // Navigate back to login screen
+        if (context.mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoginScreen()),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to sign out'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error signing out: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 158, 129, 163),
+        title: Text('umeT', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.orange)),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () => _handleLogout(context),
+            tooltip: 'Logout',
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(height: 40),
+            
+            // User profile section
+            CircleAvatar(
+              radius: 50,
+              backgroundImage: user.photoURL != null 
+                ? NetworkImage(user.photoURL!)
+                : null,
+              child: user.photoURL == null 
+                ? Icon(Icons.person, size: 50, color: Colors.grey[600])
+                : null,
+              backgroundColor: Colors.grey[300],
+            ),
+            
+            SizedBox(height: 20),
+            
+            Text(
+              'Welcome!',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
+            ),
+            
+            SizedBox(height: 10),
+            
+            Text(
+              user.displayName ?? 'User',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
+              ),
+            ),
+            
+            SizedBox(height: 8),
+            
+            Text(
+              user.email ?? 'No email',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+            
+            SizedBox(height: 40),
+            
+            // Main content area
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.shopping_bag,
+                      size: 80,
+                      color: Colors.grey[400],
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Your shopping app content goes here!',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey[600],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Logout button at the bottom
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => _handleLogout(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.logout),
+                    SizedBox(width: 8),
+                    Text(
+                      'Sign Out',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
