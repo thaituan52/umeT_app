@@ -1,6 +1,7 @@
 # umeT_app
 
 A full-stack Flutter application with FastAPI backend, MySQL database, and passwordless email authentication.
+Currently, only avaible on Android
 
 ---
 
