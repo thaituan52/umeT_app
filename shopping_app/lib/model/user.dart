@@ -56,7 +56,8 @@ class UserModel {
     return UserModel(
       uid: firebaseUser.uid,
       provider: provider,
-      identifier: firebaseUser.email ?? firebaseUser.phoneNumber ?? firebaseUser.uid, // Use email or phone number as identifier, fallback to uid
+      // Use email or phone number as identifier, fallback to uid, gonna check if need in the future
+      identifier: firebaseUser.email ?? firebaseUser.phoneNumber ?? firebaseUser.uid, 
       photoURL: firebaseUser.photoURL,
       email: firebaseUser.email,
       displayName: firebaseUser.displayName,
@@ -67,5 +68,10 @@ class UserModel {
       lastLogin: DateTime.now(), // Set to current time, can be changed later
     );
   }
+
+  //safe to do: make function to convert UserModel to/ from JSON
+  // factory UserModel.fromJson(Map<String, dynamic> json) {
+
+  // }
 
 }
