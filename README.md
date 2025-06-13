@@ -40,3 +40,9 @@ umeT_app/
 ├── .env                      # Environment variables (not committed)
 ├── .gitignore
 └── README.md
+
+
+for checking api : 
+uvicorn shopping_app.lib.backend_api.backend:app --reload 
+then check on :
+http://127.0.0.1:8000/docs#/
