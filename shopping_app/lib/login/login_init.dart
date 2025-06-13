@@ -118,6 +118,14 @@ class _LoginScreenState extends State<LoginScreen> {
   // }
 
   // Show a message in a SnackBar
+
+
+  void _handleFacebookSignIn() {
+
+
+  }
+
+  
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
