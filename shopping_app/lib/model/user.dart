@@ -2,14 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class UserModel {
   //compulsory vars
-  final String uid; //UserUID
+  final String uid; //Firbase UID
   final String provider; //Google, Facebook, etc
-  final String identifier; //identifier used to login may change later
-    final String? photoURL; //should have or gonna be a blank icon
-  //optional vars
-  final String? email; 
+  final String identifier; //username
+  final String? photoURL; //should have or gonna be a blank icon
   final String? displayName;
-  final String? phoneNumber;
+  
+  //optional vars
   final String? password; //only when use email/phone
   
   //time vars
@@ -23,9 +22,7 @@ class UserModel {
     required this.provider,
     required this.identifier,
     this.photoURL,
-    this.email,
     this.displayName,
-    this.phoneNumber,
     this.password,
     required this.createdAt,
     this.updatedAt,
@@ -59,9 +56,7 @@ class UserModel {
       // Use email or phone number as identifier, fallback to uid, gonna check if need in the future
       identifier: firebaseUser.email ?? firebaseUser.phoneNumber ?? firebaseUser.uid, 
       photoURL: firebaseUser.photoURL,
-      email: firebaseUser.email,
       displayName: firebaseUser.displayName,
-      phoneNumber: firebaseUser.phoneNumber,
       password: null, // Password is not available from Firebase user
       createdAt: DateTime.now(), // Set to current time, can be changed later
       updatedAt: null, // Initially null, can be updated later
@@ -77,9 +72,7 @@ class UserModel {
       provider: json['provider'] as String,
       identifier: json['identifier'] as String,
       photoURL: json['photoURL'] as String?,
-      email: json['email'] as String?,
       displayName: json['displayName'] as String?,
-      phoneNumber: json['phoneNumber'] as String?,
       password: json['password'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: json.containsKey('updatedAt') ? DateTime.parse(json['updatedAt'] as String) : null,
@@ -94,9 +87,7 @@ class UserModel {
       'provider': provider,
       'identifier': identifier,
       'photoURL': photoURL,
-      'email': email,
       'displayName': displayName,
-      'phoneNumber': phoneNumber,
       'password': password,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
@@ -124,9 +115,7 @@ class UserModel {
       provider: provider ?? this.provider,
       identifier: identifier ?? this.identifier,
       photoURL: photoURL ?? this.photoURL,
-      email: email ?? this.email,
       displayName: displayName ?? this.displayName,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
       password: password ?? this.password,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -137,7 +126,7 @@ class UserModel {
 
   @override
   String toString() {
-    return 'UserModel(uid: $uid, provider: $provider, identifier: $identifier, photoURL: $photoURL, email: $email, displayName: $displayName, phoneNumber: $phoneNumber, createdAt: $createdAt, updatedAt: $updatedAt, lastLogin: $lastLogin, isActive: $isActive)';
+    return 'UserModel(uid: $uid, provider: $provider, identifier: $identifier, photoURL: $photoURL, displayName: $displayName, createdAt: $createdAt, updatedAt: $updatedAt, lastLogin: $lastLogin, isActive: $isActive)';
   }
 
   @override

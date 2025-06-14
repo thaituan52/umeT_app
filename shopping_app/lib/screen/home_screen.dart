@@ -2,9 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shopping_app/login/login_init.dart';
+import 'package:shopping_app/model/user.dart';
 
 class HomeScreen extends StatelessWidget {
-  final User user;
+  final UserModel? user;
 
   const HomeScreen({super.key, required this.user});
 
@@ -76,11 +77,11 @@ class HomeScreen extends StatelessWidget {
             // User profile section
             CircleAvatar(
               radius: 50,
-              backgroundImage: user.photoURL != null 
-                ? NetworkImage(user.photoURL!)
+              backgroundImage: user!.photoURL != null 
+                ? NetworkImage(user!.photoURL!)
                 : null,
               backgroundColor: Colors.grey[300],
-              child: user.photoURL == null 
+              child: user!.photoURL == null 
                 ? Icon(Icons.person, size: 50, color: Colors.grey[600])
                 : null,
             ),
@@ -99,7 +100,7 @@ class HomeScreen extends StatelessWidget {
             SizedBox(height: 10),
             
             Text(
-              user.displayName ?? 'User',
+              user!.displayName ?? 'User',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w500,
@@ -110,7 +111,7 @@ class HomeScreen extends StatelessWidget {
             SizedBox(height: 8),
             
             Text(
-              user.email ?? 'No email',
+              user!.identifier ?? 'No email',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[600],

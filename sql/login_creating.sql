@@ -6,57 +6,50 @@ USE shopping_app;
 
 -- Create the enhanced users table
 CREATE TABLE IF NOT EXISTS user_info (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(255) UNIQUE,
-    google_id VARCHAR(100) UNIQUE,
-    facebook_id VARCHAR(100) UNIQUE,
-    phone VARCHAR(20) UNIQUE,
-    first_name VARCHAR(100),
-    last_name VARCHAR(100),
-    profile_picture_url VARCHAR(500),
-    is_active BOOLEAN DEFAULT TRUE,
-    email_verified BOOLEAN DEFAULT FALSE,
-    phone_verified BOOLEAN DEFAULT FALSE,
-    last_login TIMESTAMP NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id INT AUTO_INCREMENT PRIMARY KEY, -- Unique identifier for each user
+    firebaseID VARCHAR(100) UNIQUE, -- uid 
+    providerName VARCHAR(50), -- provider (e.g., 'google', 'facebook', 'email')
+    identifier VARCHAR(100), -- username typically
+    profile_picture_url VARCHAR(500), -- photoURL
+    display_name VARCHAR(100), -- displayName
+
+    password_hash VARCHAR(255), -- passwordHash
+
+    is_active BOOLEAN DEFAULT TRUE, -- isActive
+    last_login TIMESTAMP NULL, -- lastLogin
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- createdAt
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- updatedAt
     
-    -- Indexes for better performance
-    INDEX idx_email (email),
-    INDEX idx_phone (phone),
-    INDEX idx_google_id (google_id),
-    INDEX idx_facebook_id (facebook_id),
-    INDEX idx_is_active (is_active),
-    INDEX idx_created_at (created_at)
+    -- Indexes for better performance gonna work on this later, for now we will use the default indexes
+    -- INDEX idx_email (email),
+    -- INDEX idx_phone (phone),
+    -- INDEX idx_google_id (google_id),
+    -- INDEX idx_facebook_id (facebook_id),
+    -- INDEX idx_is_active (is_active),
+    -- INDEX idx_created_at (created_at)
 );
 
 -- Verify the table was created
 DESCRIBE user_info;
 
 -- Insert test users to verify everything works
-INSERT IGNORE INTO user_info (email, phone, first_name, last_name, email_verified) 
+INSERT IGNORE INTO user_info (firebaseID, identifier, providerName, display_name) 
 VALUES 
-    ('test@example.com', '+1234567890', 'John', 'Doe', TRUE),
-    ('jane@example.com', '+0987654321', 'Jane', 'Smith', FALSE),
-    ('google.user@gmail.com', NULL, 'Mike', 'Johnson', TRUE);
+    ('1234567890', '+1234567890', 'phone', 'John Doe'),
+    ('0987654321', 'jane@example.com', 'gmail', 'Gay Smith'),
+    ('8765436789', 'google.user@gmail.com', 'google', 'Mike Johnson');
 
 -- Update Google ID for test user
 UPDATE user_info 
-SET google_id = 'google_123456789' 
-WHERE email = 'google.user@gmail.com';
+SET display_name = 'Mike Tyson' 
+WHERE firebaseID = '8765436789';
 
 -- Check the inserted data
 SELECT 
     id,
-    email,
-    phone,
-    google_id,
-    facebook_id,
-    first_name,
-    last_name,
+    firebaseID,
+    display_name,
     is_active,
-    email_verified,
-    phone_verified,
     last_login,
     created_at,
     updated_at
@@ -65,17 +58,5 @@ ORDER BY created_at DESC;
 
 -- Useful queries for your application
 
--- Find user by email
-SELECT * FROM user_info WHERE email = 'test@example.com';
-
--- Find user by Google ID
-SELECT * FROM user_info WHERE google_id = 'google_123456789';
-
--- Find user by phone
-SELECT * FROM user_info WHERE phone = '+1234567890';
-
--- Get all active users
-SELECT * FROM user_info WHERE is_active = TRUE;
-
--- Get users who haven't verified their email
-SELECT * FROM user_info WHERE email_verified = FALSE AND email IS NOT NULL;
+-- Find user 
+SELECT * FROM user_info 

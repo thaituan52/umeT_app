@@ -3,6 +3,7 @@ import 'package:shopping_app/cus_wid/login_button.dart';
 import 'package:firebase_auth/firebase_auth.dart'; 
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shopping_app/screen/home_screen.dart'; //Implement Google Sign-In
+import 'package:shopping_app/model/user.dart'; // Import the login screen
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _selectedMethod;
   bool _isLoading = false; // Used to check if the sign-in is loading or not
   
-  void _onMethodSelected(String? method) {
+  Future<void> _onMethodSelected(String? method) async {
     setState(() {
       _selectedMethod = method;
       _isLoading = true;
@@ -23,25 +24,40 @@ class _LoginScreenState extends State<LoginScreen> {
     print('Selected method: $method');
 
     try {
+      UserModel? userModel;
       switch (method) {
         case 'Apple':
           // Handle Apple sign-in
           print('Apple sign-in selected');
+          break;
         case 'Google':
           // Handle Google sign-in
-          _handleGoogleSignIn();
+          userModel = await _handleGoogleSignIn();
           // Implement Google Sign-In logic here
+          break;
         case 'Facebook':
           // Handle Facebook sign-in
           print('Facebook sign-in selected');
+          break;
         case 'Email':
           // Handle Email sign-in
           print('Email sign-in selected');
+          break;
         case 'Phone':
           // Handle Phone sign-in
           print('Phone sign-in selected');
+          break;
         default:
           print('Unknown method selected');
+      }
+
+      if (userModel != null && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(user: userModel),
+          ),
+        );
       }
     } catch (e) {
       _showMessage('Error handling $method sign-in: $e');
@@ -54,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   // Handle Google Sign-In
-  void _handleGoogleSignIn() async {
+  Future<UserModel?> _handleGoogleSignIn() async {
     try {
       final UserCredential? userCredential = await signInWithGoogle();
 
@@ -62,23 +78,22 @@ class _LoginScreenState extends State<LoginScreen> {
         // Sign-in successful
         _showMessage('Signed in as ${userCredential.user!.email}');
         //print(userCredential.toString()); debug only
-        if (mounted) {
-          Navigator.pushReplacement(
-          context,
-          MaterialPageRoute( builder : (context) => HomeScreen( //may need to adjust this on both platforms
-              user: userCredential.user!,
-            ),
-          ),
-        ); 
-        }
+        final userModel = UserModel.fromFirebaseUser(userCredential.user!);
 
+        //save userModel to database if needed
+        
+
+
+        return userModel; // Return the UserModel instance
       } else {
         // Sign-in failed
         _showMessage('Google sign-in failed');
+        return null;
       }
     } catch (e) {
       // Handle sign-in error
       _showMessage('Error signing in with Google: $e');
+      return null;
     }
   }
 
@@ -88,10 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final GoogleSignInAccount? googleAccount = await GoogleSignIn().signIn();
 
-      if (googleAccount == null) {
-        // User cancelled the sign-in
-        return null;
-      }
+      if (googleAccount == null) return null; // User cancelled the sign-in
 
       final GoogleSignInAuthentication googleAuth = await googleAccount.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
@@ -120,9 +132,8 @@ class _LoginScreenState extends State<LoginScreen> {
   // Show a message in a SnackBar
 
 
-  void _handleFacebookSignIn() {
-
-
+  Future<UserModel?> _handleFacebookSignIn() async {
+    return null;
   }
 
   
