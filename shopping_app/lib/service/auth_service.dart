@@ -8,7 +8,7 @@ import 'package:shopping_app/model/user.dart';
 //need postAPI to check the api need
 
 class AuthService {
-  static const String _apiBaseUrl = 'http://127.0.0.1:8000/'; // Replace with your actual API URL
+  static const String _apiBaseUrl = 'http://10.0.2.2:8000'; 
 
   // Handle Google Sign-In with backend save
   static Future<UserModel?> handleGoogleSignIn() async {
@@ -46,11 +46,27 @@ class AuthService {
   // Save user to your FastAPI backend
   static Future<void> _saveUserToBackend(UserModel user) async {
     try {
+      final payload = {
+        "uid": user.uid,
+        "provider": user.provider,
+        "identifier": user.identifier,
+        "photo_url": user.photoURL,
+        "display_name": user.displayName,
+        "is_active": true,
+      };
+
+      print('Sending payload: $payload');
       final response = await http.post(
         Uri.parse('$_apiBaseUrl/users/'),
-        body: json.encode(user.toJson()),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(payload),
       );
+
+      // Debugging output
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode != 200 && response.statusCode != 201) {
         throw Exception('Failed to save user: ${response.body}');

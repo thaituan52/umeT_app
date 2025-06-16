@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from datetime import datetime
@@ -7,6 +7,7 @@ from typing import Optional
 import hashlib
 import os
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 # Load environment variables
 load_dotenv()
@@ -53,7 +54,18 @@ class UserBase(BaseModel):
     is_active: Optional[bool] = True
 
 class UserCreate(UserBase):
-    password: Optional[str] = None  # Plain text password for email signups
+    password: Optional[str] = None
+    
+    @validator('password')
+    def validate_password(cls, v):
+        if v is not None:
+            if len(v) < 8:
+                raise ValueError('Password must be at least 8 characters')
+            if not any(c.isupper() for c in v):
+                raise ValueError('Password must contain at least one uppercase letter')
+            if not any(c.isdigit() for c in v):
+                raise ValueError('Password must contain at least one digit')
+        return v
 
 class UserResponse(UserBase):
     id: int
@@ -76,6 +88,15 @@ def hash_password(password: str) -> str:
 
 app = FastAPI()
 
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins for development
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+) # CORS configuration 
+
 # Dependency
 def get_db():
     db = SessionLocal()
@@ -92,25 +113,27 @@ def get_user_by_uid(db: Session, uid: str):
     return db.query(User).filter(User.uid == uid).first()
 
 def create_or_update_user(db: Session, user_data: dict):
+    # Extract password first if it exists
+    password = user_data.pop('password', None)
+    
     user = get_user_by_uid(db, user_data["uid"])
     
-    # Hash password if provided
-    if "password" in user_data and user_data["password"]:
-        user_data["password_hash"] = hash_password(user_data["password"])
-        del user_data["password"]
+    # Hash password if provided and store in password_hash
+    if password:
+        user_data["password_hash"] = hash_password(password)
     
     if user:
         # Update existing user
         for key, value in user_data.items():
             if value is not None and hasattr(user, key):
                 setattr(user, key, value)
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now()
     else:
-        # Create new user
+        # Create new user - now user_data doesn't contain 'password'
         user = User(**user_data)
         db.add(user)
     
-    user.last_login = datetime.utcnow()
+    user.last_login = datetime.now()
     db.commit()
     db.refresh(user)
     return user
@@ -125,8 +148,12 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     Create or update a user record from Firebase auth data.
     For email/password users, the password will be hashed.
     """
-    db_user = create_or_update_user(db, user.dict())
-    return db_user
+    try :
+        db_user = create_or_update_user(db, user.dict())
+        return db_user
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
 
 @app.get("/users/{uid}", response_model=UserResponse)
 async def read_user(uid: str, db: Session = Depends(get_db)):
