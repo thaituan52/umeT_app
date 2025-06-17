@@ -126,8 +126,6 @@ class DatabaseService { //gonna bring it to another file later + make temp data 
   }
 }
 
-
-
 class HomeScreen extends StatefulWidget {
   final UserModel? user;
 
@@ -144,8 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> _categories = ["All","Men", "Toy", "Women", "Home", "Sports", "Industrial", "Crafts", "Jewelry"];
   int _selectedCategoryIndex = 0; 
 
-
-  //   // Google Sign-out method
+  // Google Sign-out method
   Future<bool> signOutFromGoogle() async {
     try {
       await GoogleSignIn().signOut();
@@ -193,9 +190,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: _selectedIndex ==0? _buildMainContent() : _buildOtherScreen(),
-      //bottomNavigationBar: _buildBottomNavBar(),
-      );
+      body: _selectedIndex == 0 ? _buildMainContent() : _buildOtherScreen(),
+      bottomNavigationBar: _buildBottomNavBar(),
+    );
   }
 
   Widget _buildMainContent() {
@@ -203,12 +200,10 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           _buildHeader(),
-          //_buildSearchBar(),
-          //_buildCategoryTabs(),
+          _buildSearchBar(),
+          _buildCategoryTabs(),
           Expanded(
-            child: Center(
-              child: Text('Product grid coming soon!'),
-            ),
+            child: _buildProductGrid(),
           ),
         ],
       ),
@@ -249,7 +244,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
   IconData _getIconForIndex(int index) {
     switch (index) {
       case 1: return Icons.category;
@@ -279,15 +273,15 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         children: [
           GestureDetector(
-            //onTap: () => _showUserProfile(),
+            onTap: () => _showUserProfile(),
             child: CircleAvatar(
               radius: 20,
-              backgroundImage: widget.user!.photoURL != null 
+              backgroundImage: widget.user?.photoURL != null 
                 ? NetworkImage(widget.user!.photoURL!)
                 : null,
               backgroundColor: Colors.grey[300],
-              child: widget.user!.photoURL == null 
-                ? Icon(Icons.person, size: 50, color: Colors.grey[600])
+              child: widget.user?.photoURL == null 
+                ? Icon(Icons.person, size: 20, color: Colors.grey[600])
                 : null,
             ),
           ),
@@ -342,6 +336,528 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: 'Logout',
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255,158,129,163),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                "Local items",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                "44.7% arrive in 3 business days",
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(25),
+            ),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: _searchQuery,
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 12),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.isEmpty? "bean bag chair" : value;
+                });
+              },
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryTabs() {
+    return SizedBox(
+      height: 60,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _categories.length,
+        itemBuilder: (context, index) {
+          bool isSelected = _selectedCategoryIndex == index;
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedCategoryIndex = index;
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected? const Color.fromARGB(255, 158, 129, 163) : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                _categories[index],
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.grey[700],
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProductGrid() {
+    List<Product> products = DatabaseService.getAllProducts();
+
+    return GridView.builder(
+      padding: EdgeInsets.all(8),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.65,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemCount: products.length,
+      itemBuilder: (context, index) {
+        return _buildProductCard(products[index]);
+      },
+    );
+  }
+
+  Widget _buildProductCard(Product product) {
+    return GestureDetector(
+      onTap: () {
+        _showProductDetails(product);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                Container(
+                  height: 140, 
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                  ),
+                  child: Center(
+                    child: Text(
+                      product.image ?? '',
+                      style: TextStyle(fontSize: 60),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.name,
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      product.deliveryInfo,
+                      style: TextStyle(fontSize: 10, color: Colors.green[600]),
+                    ),
+                    SizedBox(height: 4),
+                    Row(
+                      children: [
+                        ...List.generate(5, (index) {
+                          return Icon(
+                            index < product.rating.floor()
+                                ? Icons.star
+                                : (index < product.rating ? Icons.star_half : Icons.star_border),
+                            color: Colors.orange[400],
+                            size: 12,
+                          );
+                        }),
+                        SizedBox(width: 4),
+                        Text(
+                          "${product.rating}",
+                          style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      product.sellerInfo,
+                      style: TextStyle(fontSize: 9, color: Colors.grey[600]),
+                    ),
+                    Spacer(),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "\$${product.price.toStringAsFixed(2)}",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange[600],
+                                ),
+                              ),
+                              Text(
+                                "${product.sold} sold",
+                                style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                              ),
+                            ],
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _cartItemCount++;
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Added to cart!"),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.orange[400],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.shopping_cart_outlined,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomNavBar() {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      currentIndex: _selectedIndex,
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      selectedItemColor: Colors.orange[600],
+      unselectedItemColor: Colors.grey[600],
+      items: [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: "Home",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.category),
+          label: "Categories",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.local_shipping),
+          label: "3-day delivery",
+        ),
+        BottomNavigationBarItem(
+          icon: Stack(
+            children: [
+              Icon(Icons.shopping_cart),
+              if (_cartItemCount > 0)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    padding: EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '$_cartItemCount',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          label: "Cart",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: "You",
+        ),
+      ],
+    );
+  }
+
+  void _showProductDetails(Product product) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Product Details",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(Icons.close),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
+              Container(
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(product.image ?? '', style: TextStyle(fontSize: 80)),
+                ),
+              ),
+              SizedBox(height: 16),
+              Text(
+                product.name,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text(
+                "\$${product.price.toStringAsFixed(2)}",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange[600],
+                ),
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  ...List.generate(5, (index) {
+                    return Icon(
+                      index < product.rating.floor()
+                          ? Icons.star
+                          : (index < product.rating ? Icons.star_half : Icons.star_border),
+                      color: Colors.orange[400],
+                      size: 16,
+                    );
+                  }),
+                  SizedBox(width: 8),
+                  Text("${product.rating}"),
+                ],
+              ),
+              SizedBox(height: 16),
+              Text("${product.sold} sold"),
+              SizedBox(height: 8),
+              Text(product.deliveryInfo),
+              SizedBox(height: 8),
+              Text(product.sellerInfo),
+              Spacer(),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        setState(() {
+                          _cartItemCount++;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Added to cart!")),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange[400],
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Text(
+                        "Add to Cart",
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Proceeding to checkout...")),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 158, 129, 163),
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Text(
+                        "Buy Now",
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showUserProfile() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 50,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              SizedBox(height: 20),
+              CircleAvatar(
+                radius: 50,
+                backgroundImage: widget.user?.photoURL != null 
+                  ? NetworkImage(widget.user!.photoURL!)
+                  : null,
+                backgroundColor: Colors.grey[300],
+                child: widget.user?.photoURL == null 
+                  ? Icon(Icons.person, size: 50, color: Colors.grey[600])
+                  : null,
+              ),
+              SizedBox(height: 16),
+              Text(
+                widget.user?.displayName ?? 'User',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                widget.user?.identifier ?? 'No email',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+              SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _handleLogout(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.logout),
+                      SizedBox(width: 8),
+                      Text(
+                        'Sign Out',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
