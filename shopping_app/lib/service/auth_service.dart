@@ -55,7 +55,7 @@ class AuthService {
         "is_active": true,
       };
 
-      print('Sending payload: $payload');
+      // print('Sending payload: $payload');
       final response = await http.post(
         Uri.parse('$_apiBaseUrl/users/'),
         headers: {
@@ -65,8 +65,8 @@ class AuthService {
       );
 
       // Debugging output
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      // print('Response status: ${response.statusCode}');
+      // print('Response body: ${response.body}');
 
       if (response.statusCode != 200 && response.statusCode != 201) {
         throw Exception('Failed to save user: ${response.body}');

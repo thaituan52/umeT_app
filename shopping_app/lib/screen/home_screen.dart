@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shopping_app/login/login_init.dart';
 import 'package:shopping_app/model/product.dart';
 import 'package:shopping_app/model/user.dart'; // Import the new product file
+import 'package:shopping_app/screen/product_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserModel? user;
@@ -333,7 +334,8 @@ class _HomeScreenState extends State<HomeScreen> {
         itemBuilder: (context, index) {
           return ProductCard( //use category to query product
             product: products[index],
-            onTap: () => _showProductDetails(products[index]),
+            onTap: () => _navigateToProductDetail(products[index], widget.user),
+            //onTap: () => _showProductDetails(products[index]),
             onAddToCart: () {
               setState(() {
                 _cartItemCount++;
@@ -415,31 +417,58 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showProductDetails(Product product) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,  
-      builder: (context) => ProductDetailsModel(
+
+// Update this method in your HomeScreen class
+void _navigateToProductDetail(Product product, UserModel? user) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ProductDetailScreen(
         product: product,
+        user: user!,
+        cartItemCount: _cartItemCount, // Pass the cart count here
         onAddToCart: () {
-          Navigator.pop(context);
           setState(() {
             _cartItemCount++;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Added to cart!")),
+            SnackBar(content: Text("Added to cart")),
           );
         },
         onBuyNow: () {
-          Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Proceeding to checkout...")),
           );
         },
       ),
-    );
-  }
+    ),
+  );
+}
+  // void _showProductDetails(Product product) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     backgroundColor: Colors.transparent,  
+  //     builder: (context) => ProductDetailsModel(
+  //       product: product,
+  //       onAddToCart: () {
+  //         Navigator.pop(context);
+  //         setState(() {
+  //           _cartItemCount++;
+  //         });
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(content: Text("Added to cart!")),
+  //         );
+  //       },
+  //       onBuyNow: () {
+  //         Navigator.pop(context);
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(content: Text("Proceeding to checkout...")),
+  //         );
+  //       },
+  //     ),
+  //   );
+  // }
 
   void _showUserProfile() {
     showModalBottomSheet(
