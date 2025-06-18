@@ -1,9 +1,9 @@
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, validator
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, text
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 import hashlib
 import os
 from dotenv import load_dotenv
@@ -39,6 +39,44 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+class Category(Base):
+    __tablename__ = "categories"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), unique=True, nullable=False)
+    description = Column(String(500), nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class Product(Base):
+    __tablename__ = "products"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
+    description = Column(String(1000), nullable=True)
+    image_url = Column(String(500), nullable=True)
+    price = Column(String(10), nullable=False)  # Using String to handle decimal precision
+    sold_count = Column(Integer, default=0)
+    rating = Column(String(4), default="0.0")  # Using String for decimal precision
+    review_count = Column(Integer, default=0)
+    delivery_info = Column(String(255), nullable=True)
+    seller_info = Column(String(255), nullable=True)
+    stock_quantity = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+    is_featured = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class ProductCategory(Base):
+    __tablename__ = "product_categories"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, nullable=False)
+    category_id = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 Base.metadata.create_all(bind=engine)
 
 # ----------------------------------------
@@ -73,6 +111,61 @@ class UserResponse(UserBase):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
+
+
+class CategoryBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    is_active: Optional[bool] = True
+
+class CategoryCreate(CategoryBase):
+    pass
+
+class CategoryResponse(CategoryBase):
+    id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+class ProductBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    price: float
+    original_price: Optional[float] = None
+    sold_count: Optional[int] = 0
+    rating: Optional[float] = 0.0
+    review_count: Optional[int] = 0
+    delivery_info: Optional[str] = None
+    seller_info: Optional[str] = None
+    stock_quantity: Optional[int] = 0
+    is_active: Optional[bool] = True
+    is_featured: Optional[bool] = False
+
+class ProductCreate(ProductBase):
+    category_ids: List[int] = []
+
+class ProductUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    price: Optional[float] = None
+    original_price: Optional[float] = None
+    sold_count: Optional[int] = None
+    rating: Optional[float] = None
+    review_count: Optional[int] = None
+    delivery_info: Optional[str] = None
+    seller_info: Optional[str] = None
+    stock_quantity: Optional[int] = None
+    is_active: Optional[bool] = None
+    is_featured: Optional[bool] = None
+    category_ids: Optional[List[int]] = None
+
+class ProductResponse(ProductBase):
+    id: int
+    categories: List[CategoryResponse] = []
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 # ----------------------------------------
 # Password Hashing Utility
 # ----------------------------------------
@@ -138,6 +231,104 @@ def create_or_update_user(db: Session, user_data: dict):
     db.refresh(user)
     return user
 
+
+
+def get_category_by_id(db: Session, category_id: int):
+    return db.query(Category).filter(Category.id == category_id).first()
+
+def get_categories(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(Category).filter(Category.is_active == True).offset(skip).limit(limit).all()
+
+def create_category(db: Session, category: CategoryCreate):
+    db_category = Category(**category.dict())
+    db.add(db_category)
+    db.commit()
+    db.refresh(db_category)
+    return db_category
+
+def get_product_by_id(db: Session, product_id: int):
+    return db.query(Product).filter(Product.id == product_id).first()
+
+def get_products(db: Session, skip: int = 0, limit: int = 100, category_id: Optional[int] = None):
+    query = db.query(Product).filter(Product.is_active == True)
+    
+    if category_id:
+        query = query.join(ProductCategory).filter(ProductCategory.category_id == category_id)
+    
+    return query.offset(skip).limit(limit).all()
+
+def get_product_categories(db: Session, product_id: int):
+    result = db.execute(
+        text("""
+        SELECT c.* FROM categories c
+        JOIN product_categories pc ON c.id = pc.category_id
+        WHERE pc.product_id = :product_id AND c.is_active = TRUE
+        """),
+        {"product_id": product_id}
+    )
+    return result.fetchall()
+
+def create_product(db: Session, product: ProductCreate):
+    # Convert float values to strings for database storage
+    product_data = product.dict()
+    category_ids = product_data.pop('category_ids', [])
+    
+    # Convert numeric fields to strings
+    product_data['price'] = str(product_data['price'])
+    if product_data.get('original_price'):
+        product_data['original_price'] = str(product_data['original_price'])
+    if product_data.get('rating'):
+        product_data['rating'] = str(product_data['rating'])
+    
+    db_product = Product(**product_data)
+    db.add(db_product)
+    db.commit()
+    db.refresh(db_product)
+    
+    # Add category associations
+    for category_id in category_ids:
+        db_product_category = ProductCategory(product_id=db_product.id, category_id=category_id)
+        db.add(db_product_category)
+    
+    db.commit()
+    return db_product
+
+def update_product(db: Session, product_id: int, product_update: ProductUpdate):
+    db_product = get_product_by_id(db, product_id)
+    if not db_product:
+        return None
+    
+    update_data = product_update.dict(exclude_unset=True)
+    category_ids = update_data.pop('category_ids', None)
+    
+    # Convert numeric fields to strings
+    if 'price' in update_data:
+        update_data['price'] = str(update_data['price'])
+    if 'original_price' in update_data and update_data['original_price']:
+        update_data['original_price'] = str(update_data['original_price'])
+    if 'rating' in update_data and update_data['rating']:
+        update_data['rating'] = str(update_data['rating'])
+    
+    # Update product fields
+    for field, value in update_data.items():
+        setattr(db_product, field, value)
+    
+    # Update categories if provided
+    if category_ids is not None:
+        # Remove existing category associations
+        db.query(ProductCategory).filter(ProductCategory.product_id == product_id).delete()
+        
+        # Add new category associations
+        for category_id in category_ids:
+            db_product_category = ProductCategory(product_id=product_id, category_id=category_id)
+            db.add(db_product_category)
+    
+    db_product.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(db_product)
+    return db_product
+
+
 # ----------------------------------------
 # API Endpoints
 # ----------------------------------------
@@ -179,6 +370,247 @@ async def verify_password(
     
     hashed_input = hash_password(password)
     return {"valid": hashed_input == user.password_hash}
+
+
+
+
+# Category endpoints
+@app.post("/categories/", response_model=CategoryResponse)
+async def create_category_endpoint(category: CategoryCreate, db: Session = Depends(get_db)):
+    """Create a new category"""
+    try:
+        return create_category(db, category)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/categories/", response_model=List[CategoryResponse])
+async def read_categories(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Get all active categories"""
+    categories = get_categories(db, skip=skip, limit=limit)
+    return categories
+
+@app.get("/categories/{category_id}", response_model=CategoryResponse)
+async def read_category(category_id: int, db: Session = Depends(get_db)):
+    """Get category by ID"""
+    category = get_category_by_id(db, category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return category
+
+# Product endpoints
+@app.post("/products/", response_model=ProductResponse)
+async def create_product_endpoint(product: ProductCreate, db: Session = Depends(get_db)):
+    """Create a new product"""
+    try:
+        db_product = create_product(db, product)
+        
+        # Get categories for response
+        categories_data = get_product_categories(db, db_product.id)
+        categories = []
+        for cat_data in categories_data:
+            categories.append(CategoryResponse(
+                id=cat_data[0],
+                name=cat_data[1],
+                description=cat_data[2],
+                icon=cat_data[3],
+                is_active=cat_data[4],
+                created_at=cat_data[5],
+                updated_at=cat_data[6]
+            ))
+        
+        # Convert string fields back to appropriate types for response
+        response_data = {
+            "id": db_product.id,
+            "name": db_product.name,
+            "description": db_product.description,
+            "image_url": db_product.image_url,
+            "price": float(db_product.price),
+            "original_price": float(db_product.original_price) if db_product.original_price else None,
+            "sold_count": db_product.sold_count,
+            "rating": float(db_product.rating),
+            "review_count": db_product.review_count,
+            "delivery_info": db_product.delivery_info,
+            "seller_info": db_product.seller_info,
+            "stock_quantity": db_product.stock_quantity,
+            "is_active": db_product.is_active,
+            "is_featured": db_product.is_featured,
+            "categories": categories,
+            "created_at": db_product.created_at,
+            "updated_at": db_product.updated_at
+        }
+        
+        return ProductResponse(**response_data)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/products/", response_model=List[ProductResponse])
+async def read_products(
+    skip: int = 0, 
+    limit: int = 100, 
+    category_id: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
+    """Get all active products, optionally filtered by category"""
+    products = get_products(db, skip=skip, limit=limit, category_id=category_id)
+    
+    result = []
+    for product in products:
+        # Get categories for each product
+        categories_data = get_product_categories(db, product.id)
+        categories = []
+        for cat_data in categories_data:
+            categories.append(CategoryResponse(
+                id=cat_data[0],
+                name=cat_data[1],
+                description=cat_data[2],
+                icon=cat_data[3],
+                is_active=cat_data[4],
+                created_at=cat_data[5],
+                updated_at=cat_data[6]
+            ))
+        
+        # Convert string fields back to appropriate types
+        response_data = {
+            "id": product.id,
+            "name": product.name,
+            "description": product.description,
+            "image_url": product.image_url,
+            "price": float(product.price),
+            "original_price": float(product.original_price) if product.original_price else None,
+            "sold_count": product.sold_count,
+            "rating": float(product.rating),
+            "review_count": product.review_count,
+            "delivery_info": product.delivery_info,
+            "seller_info": product.seller_info,
+            "stock_quantity": product.stock_quantity,
+            "is_active": product.is_active,
+            "is_featured": product.is_featured,
+            "categories": categories,
+            "created_at": product.created_at,
+            "updated_at": product.updated_at
+        }
+        
+        result.append(ProductResponse(**response_data))
+    
+    return result
+
+@app.get("/products/{product_id}", response_model=ProductResponse)
+async def read_product(product_id: int, db: Session = Depends(get_db)):
+    """Get product by ID"""
+    product = get_product_by_id(db, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Get categories
+    categories_data = get_product_categories(db, product.id)
+    categories = []
+    for cat_data in categories_data:
+        categories.append(CategoryResponse(
+            id=cat_data[0],
+            name=cat_data[1],
+            description=cat_data[2],
+            icon=cat_data[3],
+            is_active=cat_data[4],
+            created_at=cat_data[5],
+            updated_at=cat_data[6]
+        ))
+    
+    # Convert string fields back to appropriate types
+    response_data = {
+        "id": product.id,
+        "name": product.name,
+        "description": product.description,
+        "image_url": product.image_url,
+        "price": float(product.price),
+        "original_price": float(product.original_price) if product.original_price else None,
+        "sold_count": product.sold_count,
+        "rating": float(product.rating),
+        "review_count": product.review_count,
+        "delivery_info": product.delivery_info,
+        "seller_info": product.seller_info,
+        "stock_quantity": product.stock_quantity,
+        "is_active": product.is_active,
+        "is_featured": product.is_featured,
+        "categories": categories,
+        "created_at": product.created_at,
+        "updated_at": product.updated_at
+    }
+    
+    return ProductResponse(**response_data)
+
+@app.put("/products/{product_id}", response_model=ProductResponse)
+async def update_product_endpoint(
+    product_id: int, 
+    product_update: ProductUpdate, 
+    db: Session = Depends(get_db)
+):
+    """Update a product"""
+    try:
+        db_product = update_product(db, product_id, product_update)
+        if not db_product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        
+        # Get categories for response
+        categories_data = get_product_categories(db, db_product.id)
+        categories = []
+        for cat_data in categories_data:
+            categories.append(CategoryResponse(
+                id=cat_data[0],
+                name=cat_data[1],
+                description=cat_data[2],
+                icon=cat_data[3],
+                is_active=cat_data[4],
+                created_at=cat_data[5],
+                updated_at=cat_data[6]
+            ))
+        
+        # Convert string fields back to appropriate types for response
+        response_data = {
+            "id": db_product.id,
+            "name": db_product.name,
+            "description": db_product.description,
+            "image_url": db_product.image_url,
+            "price": float(db_product.price),
+            "original_price": float(db_product.original_price) if db_product.original_price else None,
+            "sold_count": db_product.sold_count,
+            "rating": float(db_product.rating),
+            "review_count": db_product.review_count,
+            "delivery_info": db_product.delivery_info,
+            "seller_info": db_product.seller_info,
+            "stock_quantity": db_product.stock_quantity,
+            "is_active": db_product.is_active,
+            "is_featured": db_product.is_featured,
+            "categories": categories,
+            "created_at": db_product.created_at,
+            "updated_at": db_product.updated_at
+        }
+        
+        return ProductResponse(**response_data)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/products/{product_id}")
+async def delete_product(product_id: int, db: Session = Depends(get_db)):
+    """Soft delete a product (set is_active to False)"""
+    product = get_product_by_id(db, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    product.is_active = False
+    product.updated_at = datetime.utcnow()
+    db.commit()
+    
+    return {"message": "Product deleted successfully"}
+
+@app.get("/products/category/{category_id}", response_model=List[ProductResponse])
+async def get_products_by_category(
+    category_id: int, 
+    skip: int = 0, 
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """Get all products in a specific category"""
+    return await read_products(skip=skip, limit=limit, category_id=category_id, db=db)
 
 # ----------------------------------------
 # Health Check
