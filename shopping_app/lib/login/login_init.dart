@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_app/cus_wid/login_button.dart';
-import 'package:firebase_auth/firebase_auth.dart'; 
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shopping_app/screen/home_screen.dart'; //Implement Google Sign-In
 import 'package:shopping_app/model/user.dart'; // Import the login screen
 import 'package:shopping_app/service/auth_service.dart'; // Import the UserModel
@@ -70,67 +68,6 @@ class _LoginScreenState extends State<LoginScreen> {
     //Should make a way to log in via the selected method
   }
 
-  // Handle Google Sign-In
-  // Future<UserModel?> _handleGoogleSignIn() async {
-  //   try {
-  //     final UserCredential? userCredential = await signInWithGoogle();
-
-  //     if (userCredential != null && userCredential.user != null) {
-  //       // Sign-in successful
-  //       _showMessage('Signed in as ${userCredential.user!.email}');
-  //       //print(userCredential.toString()); debug only
-  //       final userModel = UserModel.fromFirebaseUser(userCredential.user!);
-
-  //       //save userModel to database if needed
-        
-
-
-  //       return userModel; // Return the UserModel instance
-  //     } else {
-  //       // Sign-in failed
-  //       _showMessage('Google sign-in failed');
-  //       return null;
-  //     }
-  //   } catch (e) {
-  //     // Handle sign-in error
-  //     _showMessage('Error signing in with Google: $e');
-  //     return null;
-  //   }
-  // }
-
-
-  // // Sign in with Google
-  // Future<UserCredential?> signInWithGoogle() async {
-  //   try {
-  //     final GoogleSignInAccount? googleAccount = await GoogleSignIn().signIn();
-
-  //     if (googleAccount == null) return null; // User cancelled the sign-in
-
-  //     final GoogleSignInAuthentication googleAuth = await googleAccount.authentication;
-  //     final AuthCredential credential = GoogleAuthProvider.credential(
-  //       accessToken: googleAuth.accessToken,
-  //       idToken: googleAuth.idToken,
-  //     );
-  //     return await FirebaseAuth.instance.signInWithCredential(credential);
-  //   } on Exception catch (e) {
-  //     // Handle sign-in error
-  //     print('Error signing in with Google: $e');
-  //     return null;
-  //   }
-  // }
-
-  // Future<bool> signOutFromGoogle() async {
-  //   try {
-  //     await FirebaseAuth.instance.signOut();
-  //     await GoogleSignIn().signOut();
-  //     return true; // Sign-out successful
-  //   } catch (e) {
-  //     print('Error signing out from Google: $e');
-  //     return false; // Sign-out failed
-  //   }
-  // }
-
-  // Show a message in a SnackBar
 
 
   Future<UserModel?> _handleFacebookSignIn() async {

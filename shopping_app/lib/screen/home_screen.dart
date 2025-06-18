@@ -11,13 +11,13 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.user});
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  String _searchQuery = "bean bag chair";
-  int _cartItemCount = 29;
+  String _searchQuery = "random";
+  int _cartItemCount = 0; // take from cart ? or db
   List<String> _categories = ["All","Men", "Toy", "Women", "Home", "Sports", "Industrial", "Crafts", "Jewelry"];
   int _selectedCategoryIndex = 0; 
 
@@ -143,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader() { //gonna put in setting
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -228,24 +228,6 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                "Local items",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(width: 8),
-              Text(
-                "44.7% arrive in 3 business days",
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-            ],
-          ),
-          SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -253,15 +235,27 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: TextField(
               decoration: InputDecoration(
+                prefix: SizedBox(width: 12,),
                 hintText: _searchQuery,
                 hintStyle: TextStyle(color: Colors.grey[600]),
-                prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+                suffixIcon: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Icon( //may add on tap function
+                      Icons.search, color: Colors.grey[600],
+                      ),
+                    ),
+                ),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 12),
               ),
               onChanged: (value) {
                 setState(() {
-                  _searchQuery = value.isEmpty? "bean bag chair" : value;
+                  _searchQuery = value.isEmpty? "random products?" : value;
                 });
               },
             ),
@@ -309,32 +303,51 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildProductGrid() {
     List<Product> products = DatabaseService.getAllProducts();
 
-    return GridView.builder(
-      padding: EdgeInsets.all(8),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.65,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-      ),
-      itemCount: products.length,
-      itemBuilder: (context, index) {
-        return ProductCard(
-          product: products[index],
-          onTap: () => _showProductDetails(products[index]),
-          onAddToCart: () {
-            setState(() {
-              _cartItemCount++;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text("Added to cart!"),
-                duration: Duration(seconds: 1),
-              ),
-            );
-          },
-        );
+    return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        if (details.primaryVelocity! < 0) {
+          // Swiped Left: go to next category if possible
+          setState(() {
+            if (_selectedCategoryIndex < _categories.length - 1) {
+              _selectedCategoryIndex++;
+            }
+          });
+        } else if (details.primaryVelocity! > 0) {
+          // Swiped Right: go to previous category if possible
+          setState(() {
+            if (_selectedCategoryIndex > 0) {
+              _selectedCategoryIndex--;
+            }
+          });
+        }
       },
+      child: GridView.builder(
+        padding: EdgeInsets.all(8),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.65,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+        ),
+        itemCount: products.length,
+        itemBuilder: (context, index) {
+          return ProductCard( //use category to query product
+            product: products[index],
+            onTap: () => _showProductDetails(products[index]),
+            onAddToCart: () {
+              setState(() {
+                _cartItemCount++;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Added to cart!"),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -358,9 +371,9 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: Icon(Icons.category),
           label: "Categories",
         ),
-        BottomNavigationBarItem(
+        BottomNavigationBarItem( // may not need
           icon: Icon(Icons.local_shipping),
-          label: "3-day delivery",
+          label: "Delivery",
         ),
         BottomNavigationBarItem(
           icon: Stack(
@@ -406,7 +419,7 @@ class _HomeScreenState extends State<HomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.transparent,  
       builder: (context) => ProductDetailsModel(
         product: product,
         onAddToCart: () {
