@@ -46,8 +46,8 @@ class Category(Base):
     name = Column(String(100), unique=True, nullable=False)
     description = Column(String(500), nullable=True)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow) #might delete
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow) #might delete
 
 class Product(Base):
     __tablename__ = "products"
@@ -116,7 +116,6 @@ class UserResponse(UserBase):
 class CategoryBase(BaseModel):
     name: str
     description: Optional[str] = None
-    icon: Optional[str] = None
     is_active: Optional[bool] = True
 
 class CategoryCreate(CategoryBase):
@@ -132,7 +131,6 @@ class ProductBase(BaseModel):
     description: Optional[str] = None
     image_url: Optional[str] = None
     price: float
-    original_price: Optional[float] = None
     sold_count: Optional[int] = 0
     rating: Optional[float] = 0.0
     review_count: Optional[int] = 0
@@ -230,12 +228,16 @@ def create_or_update_user(db: Session, user_data: dict):
     db.commit()
     db.refresh(user)
     return user
+    #MAY WORK IN CASE NO PASSWORD LIKE CURRENT
+
+
 
 
 
 def get_category_by_id(db: Session, category_id: int):
     return db.query(Category).filter(Category.id == category_id).first()
 
+#might change
 def get_categories(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Category).filter(Category.is_active == True).offset(skip).limit(limit).all()
 
@@ -275,8 +277,6 @@ def create_product(db: Session, product: ProductCreate):
     
     # Convert numeric fields to strings
     product_data['price'] = str(product_data['price'])
-    if product_data.get('original_price'):
-        product_data['original_price'] = str(product_data['original_price'])
     if product_data.get('rating'):
         product_data['rating'] = str(product_data['rating'])
     
@@ -304,8 +304,6 @@ def update_product(db: Session, product_id: int, product_update: ProductUpdate):
     # Convert numeric fields to strings
     if 'price' in update_data:
         update_data['price'] = str(update_data['price'])
-    if 'original_price' in update_data and update_data['original_price']:
-        update_data['original_price'] = str(update_data['original_price'])
     if 'rating' in update_data and update_data['rating']:
         update_data['rating'] = str(update_data['rating'])
     
