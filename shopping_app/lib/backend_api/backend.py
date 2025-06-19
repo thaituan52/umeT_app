@@ -64,7 +64,6 @@ class Product(Base):
     seller_info = Column(String(255), nullable=True)
     stock_quantity = Column(Integer, default=0)
     is_active = Column(Boolean, default=True)
-    is_featured = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -138,7 +137,6 @@ class ProductBase(BaseModel):
     seller_info: Optional[str] = None
     stock_quantity: Optional[int] = 0
     is_active: Optional[bool] = True
-    is_featured: Optional[bool] = False
 
 class ProductCreate(ProductBase):
     category_ids: List[int] = []
@@ -148,7 +146,6 @@ class ProductUpdate(BaseModel):
     description: Optional[str] = None
     image_url: Optional[str] = None
     price: Optional[float] = None
-    original_price: Optional[float] = None
     sold_count: Optional[int] = None
     rating: Optional[float] = None
     review_count: Optional[int] = None
@@ -156,7 +153,6 @@ class ProductUpdate(BaseModel):
     seller_info: Optional[str] = None
     stock_quantity: Optional[int] = None
     is_active: Optional[bool] = None
-    is_featured: Optional[bool] = None
     category_ids: Optional[List[int]] = None
 
 class ProductResponse(ProductBase):
@@ -423,7 +419,6 @@ async def create_product_endpoint(product: ProductCreate, db: Session = Depends(
             "description": db_product.description,
             "image_url": db_product.image_url,
             "price": float(db_product.price),
-            "original_price": float(db_product.original_price) if db_product.original_price else None,
             "sold_count": db_product.sold_count,
             "rating": float(db_product.rating),
             "review_count": db_product.review_count,
@@ -431,7 +426,6 @@ async def create_product_endpoint(product: ProductCreate, db: Session = Depends(
             "seller_info": db_product.seller_info,
             "stock_quantity": db_product.stock_quantity,
             "is_active": db_product.is_active,
-            "is_featured": db_product.is_featured,
             "categories": categories,
             "created_at": db_product.created_at,
             "updated_at": db_product.updated_at
@@ -461,10 +455,9 @@ async def read_products(
                 id=cat_data[0],
                 name=cat_data[1],
                 description=cat_data[2],
-                icon=cat_data[3],
-                is_active=cat_data[4],
-                created_at=cat_data[5],
-                updated_at=cat_data[6]
+                is_active=cat_data[3],
+                created_at=cat_data[4],
+                updated_at=cat_data[5]
             ))
         
         # Convert string fields back to appropriate types
@@ -474,7 +467,6 @@ async def read_products(
             "description": product.description,
             "image_url": product.image_url,
             "price": float(product.price),
-            "original_price": float(product.original_price) if product.original_price else None,
             "sold_count": product.sold_count,
             "rating": float(product.rating),
             "review_count": product.review_count,
@@ -482,7 +474,6 @@ async def read_products(
             "seller_info": product.seller_info,
             "stock_quantity": product.stock_quantity,
             "is_active": product.is_active,
-            "is_featured": product.is_featured,
             "categories": categories,
             "created_at": product.created_at,
             "updated_at": product.updated_at
@@ -507,10 +498,9 @@ async def read_product(product_id: int, db: Session = Depends(get_db)):
             id=cat_data[0],
             name=cat_data[1],
             description=cat_data[2],
-            icon=cat_data[3],
-            is_active=cat_data[4],
-            created_at=cat_data[5],
-            updated_at=cat_data[6]
+            is_active=cat_data[3],
+            created_at=cat_data[4],
+            updated_at=cat_data[5]
         ))
     
     # Convert string fields back to appropriate types
@@ -520,7 +510,6 @@ async def read_product(product_id: int, db: Session = Depends(get_db)):
         "description": product.description,
         "image_url": product.image_url,
         "price": float(product.price),
-        "original_price": float(product.original_price) if product.original_price else None,
         "sold_count": product.sold_count,
         "rating": float(product.rating),
         "review_count": product.review_count,
@@ -528,7 +517,6 @@ async def read_product(product_id: int, db: Session = Depends(get_db)):
         "seller_info": product.seller_info,
         "stock_quantity": product.stock_quantity,
         "is_active": product.is_active,
-        "is_featured": product.is_featured,
         "categories": categories,
         "created_at": product.created_at,
         "updated_at": product.updated_at
@@ -556,10 +544,9 @@ async def update_product_endpoint(
                 id=cat_data[0],
                 name=cat_data[1],
                 description=cat_data[2],
-                icon=cat_data[3],
-                is_active=cat_data[4],
-                created_at=cat_data[5],
-                updated_at=cat_data[6]
+                is_active=cat_data[3],
+                created_at=cat_data[4],
+                updated_at=cat_data[5]
             ))
         
         # Convert string fields back to appropriate types for response
@@ -569,7 +556,6 @@ async def update_product_endpoint(
             "description": db_product.description,
             "image_url": db_product.image_url,
             "price": float(db_product.price),
-            "original_price": float(db_product.original_price) if db_product.original_price else None,
             "sold_count": db_product.sold_count,
             "rating": float(db_product.rating),
             "review_count": db_product.review_count,
@@ -577,7 +563,6 @@ async def update_product_endpoint(
             "seller_info": db_product.seller_info,
             "stock_quantity": db_product.stock_quantity,
             "is_active": db_product.is_active,
-            "is_featured": db_product.is_featured,
             "categories": categories,
             "created_at": db_product.created_at,
             "updated_at": db_product.updated_at

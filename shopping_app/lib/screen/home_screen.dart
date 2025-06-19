@@ -5,6 +5,7 @@ import 'package:shopping_app/login/login_init.dart';
 import 'package:shopping_app/model/product.dart';
 import 'package:shopping_app/model/user.dart'; // Import the new product file
 import 'package:shopping_app/screen/product_detail_screen.dart';
+import 'package:shopping_app/service/product_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserModel? user;
@@ -301,57 +302,66 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildProductGrid() {
-    List<Product> products = DatabaseService.getAllProducts();
 
-    return GestureDetector(
-      onHorizontalDragEnd: (details) {
-        if (details.primaryVelocity! < 0) {
-          // Swiped Left: go to next category if possible
-          setState(() {
-            if (_selectedCategoryIndex < _categories.length - 1) {
-              _selectedCategoryIndex++;
-            }
-          });
-        } else if (details.primaryVelocity! > 0) {
-          // Swiped Right: go to previous category if possible
-          setState(() {
-            if (_selectedCategoryIndex > 0) {
-              _selectedCategoryIndex--;
-            }
-          });
-        }
-      },
-      child: GridView.builder(
-        padding: EdgeInsets.all(8),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.65,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-        ),
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          return ProductCard( //use category to query product
-            product: products[index],
-            onTap: () => _navigateToProductDetail(products[index], widget.user),
-            //onTap: () => _showProductDetails(products[index]),
-            onAddToCart: () {
+  Widget _buildProductGrid() {
+  return FutureBuilder<List<Product>>(
+    future: ProductService.getProducts(
+      categoryId: _selectedCategoryIndex == 0 ? null : _selectedCategoryIndex,
+    ),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return Center(child: CircularProgressIndicator());
+      } else if (snapshot.hasError) {
+        return Center(child: Text('Error: ${snapshot.error}'));
+      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        return Center(child: Text('No products found.'));
+      } else {
+        List<Product> products = snapshot.data!;
+        return GestureDetector(
+          onHorizontalDragEnd: (details) {
+            if (details.primaryVelocity! < 0 && _selectedCategoryIndex < _categories.length - 1) {
               setState(() {
-                _cartItemCount++;
+                _selectedCategoryIndex++;
               });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text("Added to cart!"),
-                  duration: Duration(seconds: 1),
-                ),
+            } else if (details.primaryVelocity! > 0 && _selectedCategoryIndex > 0) {
+              setState(() {
+                _selectedCategoryIndex--;
+              });
+            }
+          },
+          child: GridView.builder(
+            padding: EdgeInsets.all(8),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.65,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: products.length,
+            itemBuilder: (context, index) {
+              return ProductCard(
+                product: products[index],
+                onTap: () => _navigateToProductDetail(products[index], widget.user),
+                onAddToCart: () {
+                  setState(() {
+                    _cartItemCount++;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Added to cart!"),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
-      ),
-    );
-  }
+          ),
+        );
+      }
+    },
+  );
+}
+
 
   Widget _buildBottomNavBar() {
     return BottomNavigationBar(
@@ -444,31 +454,6 @@ void _navigateToProductDetail(Product product, UserModel? user) {
     ),
   );
 }
-  // void _showProductDetails(Product product) {
-  //   showModalBottomSheet(
-  //     context: context,
-  //     isScrollControlled: true,
-  //     backgroundColor: Colors.transparent,  
-  //     builder: (context) => ProductDetailsModel(
-  //       product: product,
-  //       onAddToCart: () {
-  //         Navigator.pop(context);
-  //         setState(() {
-  //           _cartItemCount++;
-  //         });
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(content: Text("Added to cart!")),
-  //         );
-  //       },
-  //       onBuyNow: () {
-  //         Navigator.pop(context);
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(content: Text("Proceeding to checkout...")),
-  //         );
-  //       },
-  //     ),
-  //   );
-  // }
 
   void _showUserProfile() {
     showModalBottomSheet(

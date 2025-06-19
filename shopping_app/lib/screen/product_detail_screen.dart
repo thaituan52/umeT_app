@@ -37,8 +37,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   ];
 
   String? _getImageUrl() {
-    if (widget.product.image != null && widget.product.image!.isNotEmpty) {
-      return widget.product.image;
+    if (widget.product.imageURL != null && widget.product.imageURL!.isNotEmpty) {
+      return widget.product.imageURL;
     }
     return widget.user.photoURL;
   }

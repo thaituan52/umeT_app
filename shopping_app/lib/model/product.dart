@@ -1,127 +1,149 @@
 import 'package:flutter/material.dart';
+import 'package:shopping_app/model/category.dart';
 
 class Product { //model for products so that I can put to db later like user
   final int id;
   final String name;
-  final String? image;
+  final String? description;
+  final String? imageURL;
   final double price;
-  final int sold; //soldNum
+  final int soldCount; //soldNum
   final double rating;
-  //final int reviews; //considerable
+  final int reviewsCount; //considerable
   final String deliveryInfo;
   final String sellerInfo;
+  //new fields
+  final int stockQuantity; 
+  final bool isActive; 
+  final List<Category> categories; 
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   Product({
     required this.id,
     required this.name,
-    required this.image,
+    this.description,
+    this.imageURL,
     required this.price,
-    // required this.originalPrice,
-    required this.sold,
+    required this.soldCount,
     required this.rating,
-    // required this.reviews,
-    // this.isLocal = false,
-    // this.isFathersDayDeal = false,
-    // this.isClearanceDeal = false,
-    // this.isAd = false,
+    required this.reviewsCount,
     required this.deliveryInfo,
     required this.sellerInfo,
+    this.stockQuantity = 0,
+    this.isActive = true,
+    this.categories = const [],
+    this.createdAt,
+    this.updatedAt,
   });
-}
 
 
-class DatabaseService { //gonna bring it to another file later + make temp data to use rn
-  static List<Product> _products = [
-    Product(
-      id: 1,
-      name: "Waterproof Sofa Inflatable Bean Bag Chair",
-      image: "🛋️",
-      price: 17.25,
-      //originalPrice: 25.00,
-      sold: 854,
-      rating: 4.8,
-      //reviews: 141,
-      //isLocal: true,
-      deliveryInfo: "44.7% arrive in 3 business days",
-      sellerInfo: "Seller established 1 year ago",
-    ),
-    Product(
-      id: 2,
-      name: "Butane Torch Lighter Double-Safe Welding",
-      image: "🔥",
-      price: 5.38,
-      //originalPrice: 12.99,
-      sold: 475,
-      rating: 4.9,
-      //reviews: 56,
-      //isLocal: true,
-      //isFathersDayDeal: true,
-      //isAd: true,
-      deliveryInfo: "Arrives in 2+ business days",
-      sellerInfo: "High repeat customers store",
-    ),
-    Product(
-      id: 3,
-      name: "Versatile Shoe Rack Storage Organizer",
-      image: "👟",
-      price: 7.43,
-      //originalPrice: 15.99,
-      sold: 6559,
-      rating: 4.3,
-      //reviews: 6959,
-      //isLocal: true,
-      //isClearanceDeal: true,
-      deliveryInfo: "Fast delivery",
-      sellerInfo: "Low item return rate store",
-    ),
-    Product(
-      id: 4,
-      name: "Compact Speaker Magnetic Levitation",
-      image: "🔊",
-      price: 11.13,
-      //originalPrice: 29.99,
-      sold: 3,
-      rating: 4.7,
-      //reviews: 28,
-      //isLocal: true,
-      //isFathersDayDeal: true,
-      deliveryInfo: "Fast delivery store",
-      sellerInfo: "Reliable seller",
-    ),
-    Product(
-      id: 5,
-      name: "Wireless Bluetooth Earbuds Pro",
-      image: "🎧",
-      price: 23.99,
-      //originalPrice: 59.99,
-      sold: 1247,
-      rating: 4.6,
-      //reviews: 892,
-      //isLocal: true,
-      deliveryInfo: "2-3 business days",
-      sellerInfo: "Top rated seller",
-    ),
-    Product(
-      id: 6,
-      name: "Smart Watch Fitness Tracker",
-      image: "⌚",
-      price: 34.50,
-      //originalPrice: 89.99,
-      sold: 567,
-      rating: 4.4,
-      //reviews: 234,
-      //isLocal: true,
-      deliveryInfo: "3-5 business days",
-      sellerInfo: "Established store",
-    ),
-  ];
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'],
+      name: json['name'],
+      description: json['description'],
+      imageURL: json['image_url'],
+      price: (json['price'] as num).toDouble(),
+      soldCount: json['sold_count'] ?? 0,
+      rating: (json['rating'] as num).toDouble(),
+      reviewsCount: json['review_count'] ?? 0,
+      deliveryInfo: json['delivery_info'],
+      sellerInfo: json['seller_info'],
+      stockQuantity: json['stock_quantity'] ?? 0,
+      isActive: json['is_active'] ?? true,
+      categories: json['categories'] != null
+          ? (json['categories'] as List)
+              .map((category) => Category.fromJson(category))
+              .toList()
+          : [],
+      createdAt: json['created_at'] != null 
+          ? DateTime.parse(json['created_at']) 
+          : null,
+      updatedAt: json['updated_at'] != null 
+          ? DateTime.parse(json['updated_at']) 
+          : null,
 
-  static List<Product> getAllProducts() => _products;
+    );
+  }
 
-  static void addProduct(Product product) {
-    _products.add(product);
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'image_url': imageURL,
+      'price': price,
+      'sold_count': soldCount,
+      'rating': rating,
+      'review_count': reviewsCount,
+      'delivery_info': deliveryInfo,
+      'seller_info': sellerInfo,
+      'stock_quantity': stockQuantity,
+      'is_active': isActive,
+      'categories': categories.map((category) => category.toJson()).toList(),
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
+  }
+
+  //Helper method
+  String get categoryNames {
+    return categories.map((category) => category.name).join(', ');
+  }
+
+  bool belongsToCategory(int categoryId) {
+    return categories.any((category) => category.id == categoryId);
   }
 }
+
+class ProductCreate {
+  final String name;
+  final String? description;
+  final String? imageUrl;
+  final double price;
+  final int soldCount;
+  final double rating;
+  final int reviewCount;
+  final String? deliveryInfo;
+  final String? sellerInfo;
+  final int stockQuantity;
+  final bool isActive;
+  final List<int> categoryIds;
+
+  ProductCreate({
+    required this.name,
+    this.description,
+    this.imageUrl,
+    required this.price,
+    this.soldCount = 0,
+    this.rating = 0.0,
+    this.reviewCount = 0,
+    this.deliveryInfo,
+    this.sellerInfo,
+    this.stockQuantity = 0,
+    this.isActive = true,
+    this.categoryIds = const [],
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+      'image_url': imageUrl,
+      'price': price,
+      'sold_count': soldCount,
+      'rating': rating,
+      'review_count': reviewCount,
+      'delivery_info': deliveryInfo,
+      'seller_info': sellerInfo,
+      'stock_quantity': stockQuantity,
+      'is_active': isActive,
+    };
+  }
+}
+
+
 
 
 
@@ -169,7 +191,7 @@ class DatabaseService { //gonna bring it to another file later + make temp data 
                   ),
                   child: Center(
                     child: Text(
-                      product.image ?? '',
+                      product.imageURL ?? '',
                       style: TextStyle(fontSize: 60),
                     ),
                   ),
@@ -233,7 +255,7 @@ class DatabaseService { //gonna bring it to another file later + make temp data 
                                 ),
                               ),
                               Text(
-                                "${product.sold} sold",
+                                "${product.soldCount} sold",
                                 style: TextStyle(fontSize: 10, color: Colors.grey[600]),
                               ),
                             ],
