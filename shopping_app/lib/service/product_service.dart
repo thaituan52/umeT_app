@@ -1,11 +1,8 @@
 // lib/services/product_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shopping_app/model/category.dart';
 import 'package:shopping_app/model/product.dart';
-import 'package:shopping_app/model/user.dart';
 
 //need postAPI to check the api need
 
@@ -55,7 +52,7 @@ class ProductService {
       rethrow;
     }
   }
-
+    //havent used
     static Future<Category> createCategory({
       required String name,
       String? description,
@@ -92,10 +89,15 @@ class ProductService {
     int skip = 0,
     int limit = 100,
     int? categoryId,
+    String? query,
   }) async {
     try {
       String url = '$_apiBaseUrl/products/?skip=$skip&limit=$limit';
       url += categoryId == null ? '' : '&category_id=$categoryId';
+
+      if(query != null && query.isNotEmpty) {
+        url += '&q=${Uri.encodeComponent(query)}';
+      }
       final response = await http.get(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},

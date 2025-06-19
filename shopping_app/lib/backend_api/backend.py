@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, validator
-from sqlalchemy import ForeignKey, create_engine, Column, Integer, String, Boolean, DateTime, text
+from sqlalchemy import ForeignKey, create_engine, Column, Integer, String, Boolean, DateTime, or_, text
 from sqlalchemy.orm import declarative_base, sessionmaker, Session, relationship
 from datetime import datetime
 from typing import List, Optional
@@ -256,16 +256,30 @@ def create_category(db: Session, category: CategoryCreate):
 def get_product_by_id(db: Session, product_id: int):
     return db.query(Product).filter(Product.id == product_id).first()
 
-def get_products(db: Session, skip: int = 0, limit: int = 100, category_id: Optional[int] = None):
+def get_products(
+        db: Session, 
+        skip: int = 0, 
+        limit: int = 100, 
+        category_id: Optional[int] = None, 
+        q: Optional[str] = None
+    ):
     query = db.query(Product).filter(Product.is_active == True)
     
     if category_id:
         query = (
-            db.query(Product)
-            .select_from(ProductCategory)
-            .join(Product, Product.id == ProductCategory.product_id)
+            query
+            .join(ProductCategory, Product.id == ProductCategory.product_id)
             .filter(ProductCategory.category_id == category_id)
         )
+    if q and q.strip():
+        search_term = f"%{q.strip()}%"
+        query = query.filter(
+            or_(
+                Product.name.ilike(search_term),
+                Product.description.ilike(search_term)
+            )
+        )
+    #print(str(query.statement.compile(compile_kwargs={"literal_binds": True})))
     return query.offset(skip).limit(limit).all()
 
 def get_product_categories(db: Session, product_id: int):
@@ -452,10 +466,11 @@ async def read_products(
     skip: int = 0, 
     limit: int = 100, 
     category_id: Optional[int] = None,
+    q: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     """Get all active products, optionally filtered by category"""
-    products = get_products(db, skip=skip, limit=limit, category_id=category_id)
+    products = get_products(db, skip=skip, limit=limit, category_id=category_id, q = q)
     
     result = []
     for product in products:
@@ -493,6 +508,7 @@ async def read_products(
         
         result.append(ProductResponse(**response_data))
     
+
     return result
 
 @app.get("/products/{product_id}", response_model=ProductResponse)

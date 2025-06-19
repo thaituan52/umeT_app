@@ -19,7 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  String _searchQuery = "random";
+  String _searchQuery = "search";
   int _cartItemCount = 0; // take from cart ? or db
   //List<Category> _categories = [Category(id: 0, name: "All", isActive: true)];
   List<Category>? _cacheCategories;
@@ -100,7 +100,7 @@ Widget _buildMainContent() {
                 });
               }
             },
-            child: Container(
+            child: SizedBox(
               //color: Colors.grey,
               width: double.infinity,
               child: _buildProductGrid()), 
@@ -278,7 +278,7 @@ Widget _buildMainContent() {
               ),
               onChanged: (value) {
                 setState(() {
-                  _searchQuery = value.isEmpty? "random products?" : value;
+                  _searchQuery = value.isEmpty? "search" : value;
                 });
               },
             ),
@@ -353,6 +353,7 @@ Future<List<Category>> _getCategoriesWithAll() async {
   return FutureBuilder<List<Product>>(
     future: ProductService.getProducts(
       categoryId: _selectedCategoryIndex == 0 ? null : _selectedCategoryIndex,
+      query: _searchQuery == "search" ? '' : _searchQuery,
     ),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
