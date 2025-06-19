@@ -57,7 +57,7 @@ INSERT INTO categories (name, description) VALUES
 
 -- Insert sample products
 INSERT INTO products (name, description, image_url, price, sold_count, rating, review_count, delivery_info, seller_info, stock_quantity) VALUES
-('Waterproof Sofa Inflatable Bean Bag Chair', 'Comfortable and waterproof bean bag chair perfect for outdoor use', '🛋️', 17.25,  854, 4.8, 141, '44.7% arrive in 3 business days', 'Seller established 1 year ago', 50),
+('Waterproof Sofa Inflatable Bean Bag Chair', 'Comfortable and waterproof bean bag chair perfect for outdoor use', 'https://images.unsplash.com/photo-1743630738181-b0e26c76c74c?q=80&w=680&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 17.25,  854, 4.8, 141, '44.7% arrive in 3 business days', 'Seller established 1 year ago', 50),
 ('Butane Torch Lighter Double-Safe Welding', 'Professional grade butane torch with safety features', '🔥', 5.38,  475, 4.9, 56, 'Arrives in 2+ business days', 'High repeat customers store', 30),
 ('Versatile Shoe Rack Storage Organizer', 'Multi-tier shoe organizer for closet storage', '👟', 7.43,  6559, 4.3, 6959, 'Fast delivery', 'Low item return rate store', 100),
 ('Compact Speaker Magnetic Levitation', 'Floating speaker with magnetic levitation technology', '🔊', 11.13,  3, 4.7, 28, 'Fast delivery store', 'Reliable seller', 15),

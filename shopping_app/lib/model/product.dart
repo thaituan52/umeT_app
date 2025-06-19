@@ -160,6 +160,13 @@ class ProductCreate {
       required this.onAddToCart,
     });
 
+    String? _getImageUrl() {
+    if (product.imageURL != null && product.imageURL!.isNotEmpty) {
+      return product.imageURL;
+    }
+    return null;
+  }
+
     @override
     Widget build(BuildContext context) {
       return GestureDetector(
@@ -190,10 +197,51 @@ class ProductCreate {
                     borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
                   ),
                   child: Center(
-                    child: Text(
-                      product.imageURL ?? '',
-                      style: TextStyle(fontSize: 60),
-                    ),
+                    child: _getImageUrl() != null
+                      ? Image.network(
+                          _getImageUrl()!,
+                          height: 300,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 300,
+                              width: double.infinity,
+                              color: Colors.grey[300],
+                              child: Icon(
+                                Icons.image_not_supported,
+                                size: 80,
+                                color: Colors.grey[600],
+                              ),
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              height: 300,
+                              width: double.infinity,
+                              color: Colors.grey[300],
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          height: 300,
+                          width: double.infinity,
+                          color: Colors.grey[300],
+                          child: Icon(
+                            Icons.image,
+                            size: 80,
+                            color: Colors.grey[600],
+                          ),
+                        ),
                   ),
                 ),
               ],
