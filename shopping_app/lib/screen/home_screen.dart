@@ -21,7 +21,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   String _searchQuery = "random";
   int _cartItemCount = 0; // take from cart ? or db
-  List<Category> _categories = [];
+  //List<Category> _categories = [Category(id: 0, name: "All", isActive: true)];
+  List<Category>? _cacheCategories;
   int _selectedCategoryIndex = 0; 
 
   // Google Sign-out method
@@ -68,12 +69,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    fetchCategories(); // Load categories when the screen starts
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -84,20 +79,37 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildMainContent() {
-    return SafeArea(
-      child: Column(
-        children: [
-          _buildHeader(),
-          _buildSearchBar(),
-          _buildCategoryTabs(),
-          Expanded(
-            child: _buildProductGrid(),
+Widget _buildMainContent() {
+  return SafeArea(
+    child: Column(
+      children: [
+        _buildHeader(),
+        _buildSearchBar(),
+        _buildCategoryTabs(),
+        Expanded(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onHorizontalDragEnd: (details) {
+              if (details.primaryVelocity! < 0 && _selectedCategoryIndex < (_cacheCategories?.length ?? 1) - 1) {
+                setState(() {
+                  _selectedCategoryIndex++;
+                });
+              } else if (details.primaryVelocity! > 0 && _selectedCategoryIndex > 0) {
+                setState(() {
+                  _selectedCategoryIndex--;
+                });
+              }
+            },
+            child: Container(
+              //color: Colors.grey,
+              width: double.infinity,
+              child: _buildProductGrid()), 
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildOtherScreen() {
     return SafeArea(
@@ -153,9 +165,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> fetchCategories() async {
-    _categories = await ProductService.getCategories();
-  }
 
   Widget _buildHeader() { //gonna put in setting
     return Container(
@@ -280,40 +289,65 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCategoryTabs() {
-    return SizedBox(
-      height: 60,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _categories.length,
-        itemBuilder: (context, index) {
-          bool isSelected = _selectedCategoryIndex == index;
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedCategoryIndex = index;
-              });
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected? const Color.fromARGB(255, 158, 129, 163) : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                _categories[index].name,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey[700],
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+  return FutureBuilder<List<Category>>(
+    future: _getCategoriesWithAll(),
+    builder: (context, snapshot) {
+      // if (snapshot.connectionState == ConnectionState.waiting) {
+      //   return SizedBox(height: 60, child: Center(child: CircularProgressIndicator()));
+      //   //debug purpose
+      // }
+      
+      if (!snapshot.hasData) {
+        return SizedBox(height: 60);
+      }
+      
+      List<Category> categories = snapshot.data!;
+      
+      return SizedBox(
+        height: 60,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: categories.length,
+          itemBuilder: (context, index) {
+            bool isSelected = _selectedCategoryIndex == index;
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedCategoryIndex = index;
+                });
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected? const Color.fromARGB(255, 158, 129, 163) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  categories[index].name,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.grey[700],
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
-    );
+            );
+          },
+        ),
+      );
+    },
+  );
+}
+
+Future<List<Category>> _getCategoriesWithAll() async {
+  if(_cacheCategories != null) {
+    return _cacheCategories!;
   }
 
+  final categories = await ProductService.getCategories();
+  _cacheCategories = [Category(id: 0, name: "All", isActive: true)] + categories;
+  return _cacheCategories!;
+}
 
   Widget _buildProductGrid() {
   return FutureBuilder<List<Product>>(
@@ -329,19 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return Center(child: Text('No products found.'));
       } else {
         List<Product> products = snapshot.data!;
-        return GestureDetector(
-          onHorizontalDragEnd: (details) {
-            if (details.primaryVelocity! < 0 && _selectedCategoryIndex < _categories.length - 1) {
-              setState(() {
-                _selectedCategoryIndex++;
-              });
-            } else if (details.primaryVelocity! > 0 && _selectedCategoryIndex > 0) {
-              setState(() {
-                _selectedCategoryIndex--;
-              });
-            }
-          },
-          child: GridView.builder(
+        return GridView.builder(
             padding: EdgeInsets.all(8),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
@@ -367,8 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               );
             },
-          ),
-        );
+          );
       }
     },
   );

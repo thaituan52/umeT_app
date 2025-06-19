@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, validator
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, text
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy import ForeignKey, create_engine, Column, Integer, String, Boolean, DateTime, text
+from sqlalchemy.orm import declarative_base, sessionmaker, Session, relationship
 from datetime import datetime
 from typing import List, Optional
 import hashlib
@@ -49,6 +49,9 @@ class Category(Base):
     created_at = Column(DateTime, default=datetime.utcnow) #might delete
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow) #might delete
 
+    category_products = relationship("ProductCategory", back_populates="category")
+
+
 class Product(Base):
     __tablename__ = "products"
     
@@ -67,13 +70,19 @@ class Product(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    product_categories = relationship("ProductCategory", back_populates="product")
+
+
 class ProductCategory(Base):
     __tablename__ = "product_categories"
     
     id = Column(Integer, primary_key=True, index=True)
-    product_id = Column(Integer, nullable=False)
-    category_id = Column(Integer, nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)  
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)  
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    product = relationship("Product", back_populates="product_categories")
+    category = relationship("Category", back_populates="category_products")
 
 
 Base.metadata.create_all(bind=engine)
@@ -251,8 +260,12 @@ def get_products(db: Session, skip: int = 0, limit: int = 100, category_id: Opti
     query = db.query(Product).filter(Product.is_active == True)
     
     if category_id:
-        query = query.join(ProductCategory).filter(ProductCategory.category_id == category_id)
-    
+        query = (
+            db.query(Product)
+            .select_from(ProductCategory)
+            .join(Product, Product.id == ProductCategory.product_id)
+            .filter(ProductCategory.category_id == category_id)
+        )
     return query.offset(skip).limit(limit).all()
 
 def get_product_categories(db: Session, product_id: int):
@@ -406,10 +419,9 @@ async def create_product_endpoint(product: ProductCreate, db: Session = Depends(
                 id=cat_data[0],
                 name=cat_data[1],
                 description=cat_data[2],
-                icon=cat_data[3],
-                is_active=cat_data[4],
-                created_at=cat_data[5],
-                updated_at=cat_data[6]
+                is_active=cat_data[3],
+                created_at=cat_data[4],
+                updated_at=cat_data[5]
             ))
         
         # Convert string fields back to appropriate types for response
