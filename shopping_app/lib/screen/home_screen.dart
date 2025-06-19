@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shopping_app/login/login_init.dart';
+import 'package:shopping_app/model/category.dart';
 import 'package:shopping_app/model/product.dart';
 import 'package:shopping_app/model/user.dart'; // Import the new product file
 import 'package:shopping_app/screen/product_detail_screen.dart';
@@ -20,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   String _searchQuery = "random";
   int _cartItemCount = 0; // take from cart ? or db
-  List<String> _categories = ["All","Men", "Toy", "Women", "Home", "Sports", "Industrial", "Crafts", "Jewelry"];
+  List<Category> _categories = [];
   int _selectedCategoryIndex = 0; 
 
   // Google Sign-out method
@@ -66,6 +67,13 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
   }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCategories(); // Load categories when the screen starts
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -143,6 +151,10 @@ class _HomeScreenState extends State<HomeScreen> {
       case 4: return 'Profile';
       default: return 'Home';
     }
+  }
+
+  Future<void> fetchCategories() async {
+    _categories = await ProductService.getCategories();
   }
 
   Widget _buildHeader() { //gonna put in setting
@@ -289,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                _categories[index],
+                _categories[index].name,
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.grey[700],
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
