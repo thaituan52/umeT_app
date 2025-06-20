@@ -69,7 +69,18 @@ Widget _buildMainContent() {
             child: SizedBox(
               //color: Colors.grey,
               width: double.infinity,
-              child: _buildProductGrid()), 
+              child: ProductGridWidget(
+                      categoryId: _selectedCategoryIndex,
+                      searchQuery: _searchQuery,
+                      user: widget.user,
+                      cartItemCount: _cartItemCount,
+                      onAddToCartExternal: (product) {
+                        setState(() {
+                        _cartItemCount++;
+                        });
+                      },
+                ),
+              ), 
           ),
         ),
       ],
@@ -241,52 +252,52 @@ Future<List<Category>> _getCategoriesWithAll() async {
   return _cacheCategories!;
 }
 
-  Widget _buildProductGrid() {
-  return FutureBuilder<List<Product>>(
-    future: ProductService.getProducts(
-      categoryId: _selectedCategoryIndex == 0 ? null : _selectedCategoryIndex,
-      query: _searchQuery == "search" ? '' : _searchQuery,
-    ),
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return Center(child: CircularProgressIndicator());
-      } else if (snapshot.hasError) {
-        return Center(child: Text('Error: ${snapshot.error}'));
-      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-        return Center(child: Text('No products found.'));
-      } else {
-        List<Product> products = snapshot.data!;
-        return GridView.builder(
-            padding: EdgeInsets.all(8),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.65,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-            ),
-            itemCount: products.length,
-            itemBuilder: (context, index) {
-              return ProductCard(
-                product: products[index],
-                onTap: () => _navigateToProductDetail(products[index], widget.user),
-                onAddToCart: () {
-                  setState(() {
-                    _cartItemCount++;
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Added to cart!"),
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
-                },
-              );
-            },
-          );
-      }
-    },
-  );
-}
+//   Widget _buildProductGrid() {
+//   return FutureBuilder<List<Product>>(
+//     future: ProductService.getProducts(
+//       categoryId: _selectedCategoryIndex == 0 ? null : _selectedCategoryIndex,
+//       query: _searchQuery == "search" ? '' : _searchQuery,
+//     ),
+//     builder: (context, snapshot) {
+//       if (snapshot.connectionState == ConnectionState.waiting) {
+//         return Center(child: CircularProgressIndicator());
+//       } else if (snapshot.hasError) {
+//         return Center(child: Text('Error: ${snapshot.error}'));
+//       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+//         return Center(child: Text('No products found.'));
+//       } else {
+//         List<Product> products = snapshot.data!;
+//         return GridView.builder(
+//             padding: EdgeInsets.all(8),
+//             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//               crossAxisCount: 2,
+//               childAspectRatio: 0.65,
+//               crossAxisSpacing: 8,
+//               mainAxisSpacing: 8,
+//             ),
+//             itemCount: products.length,
+//             itemBuilder: (context, index) {
+//               return ProductCard(
+//                 product: products[index],
+//                 onTap: () => _navigateToProductDetail(products[index], widget.user),
+//                 onAddToCart: () {
+//                   setState(() {
+//                     _cartItemCount++;
+//                   });
+//                   ScaffoldMessenger.of(context).showSnackBar(
+//                     SnackBar(
+//                       content: Text("Added to cart!"),
+//                       duration: Duration(seconds: 1),
+//                     ),
+//                   );
+//                 },
+//               );
+//             },
+//           );
+//       }
+//     },
+//   );
+// }
 
 
 
