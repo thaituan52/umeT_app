@@ -1,7 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:shopping_app/login/login_init.dart';
-
+import 'package:shopping_app/login/login_check.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -18,7 +17,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 92, 223, 140)),
         fontFamily: 'Roboto',
       ),
-      home: LoginScreen(),
+      home: LoginCheck(),
       debugShowCheckedModeBanner: false,
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_app/cus_wid/login_button.dart';
-import 'package:shopping_app/screen/home_screen.dart'; //Implement Google Sign-In
 import 'package:shopping_app/model/user.dart'; // Import the login screen
+import 'package:shopping_app/screen/main_screen.dart';
 import 'package:shopping_app/service/auth_service.dart'; // Import the UserModel
 
 class LoginScreen extends StatefulWidget {
@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomeScreen(user: userModel),
+            builder: (context) => MainScreen(user: userModel),
           ),
         );
       }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shopping_app/login/login_init.dart';
 import 'package:shopping_app/model/user.dart';
-import 'package:shopping_app/screen/home_screen.dart';
+import 'package:shopping_app/screen/main_screen.dart';
 
 
 
@@ -16,7 +16,7 @@ class LoginCheck extends StatelessWidget {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return HomeScreen(
+            return MainScreen(
               user: UserModel.fromFirebaseUser(snapshot.data!),
             );
           } else {

@@ -75,7 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: _selectedIndex == 0 ? _buildMainContent() : _buildOtherScreen(),
-      bottomNavigationBar: _buildBottomNavBar(),
+      // bottomNavigationBar: _buildBottomNavBar(),
     );
   }
 
@@ -397,69 +397,69 @@ Future<List<Category>> _getCategoriesWithAll() async {
 }
 
 
-  Widget _buildBottomNavBar() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: _selectedIndex,
-      onTap: (index) {
-        setState(() {
-          _selectedIndex = index;
-        });
-      },
-      selectedItemColor: Colors.orange[600],
-      unselectedItemColor: Colors.grey[600],
-      items: [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: "Home",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.category),
-          label: "Categories",
-        ),
-        BottomNavigationBarItem( // may not need
-          icon: Icon(Icons.local_shipping),
-          label: "Delivery",
-        ),
-        BottomNavigationBarItem(
-          icon: Stack(
-            children: [
-              Icon(Icons.shopping_cart),
-              if (_cartItemCount > 0)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    constraints: BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      '$_cartItemCount',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          label: "Cart",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: "You",
-        ),
-      ],
-    );
-  }
+  // Widget _buildBottomNavBar() {
+  //   return BottomNavigationBar(
+  //     type: BottomNavigationBarType.fixed,
+  //     currentIndex: _selectedIndex,
+  //     onTap: (index) {
+  //       setState(() {
+  //         _selectedIndex = index;
+  //       });
+  //     },
+  //     selectedItemColor: Colors.orange[600],
+  //     unselectedItemColor: Colors.grey[600],
+  //     items: [
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.home),
+  //         label: "Home",
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.category),
+  //         label: "Categories",
+  //       ),
+  //       BottomNavigationBarItem( // may not need
+  //         icon: Icon(Icons.local_shipping),
+  //         label: "Delivery",
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Stack(
+  //           children: [
+  //             Icon(Icons.shopping_cart),
+  //             if (_cartItemCount > 0)
+  //               Positioned(
+  //                 right: 0,
+  //                 top: 0,
+  //                 child: Container(
+  //                   padding: EdgeInsets.all(2),
+  //                   decoration: BoxDecoration(
+  //                     color: Colors.red,
+  //                     borderRadius: BorderRadius.circular(10),
+  //                   ),
+  //                   constraints: BoxConstraints(
+  //                     minWidth: 16,
+  //                     minHeight: 16,
+  //                   ),
+  //                   child: Text(
+  //                     '$_cartItemCount',
+  //                     style: TextStyle(
+  //                       color: Colors.white,
+  //                       fontSize: 10,
+  //                     ),
+  //                     textAlign: TextAlign.center,
+  //                   ),
+  //                 ),
+  //               ),
+  //           ],
+  //         ),
+  //         label: "Cart",
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.person),
+  //         label: "You",
+  //       ),
+  //     ],
+  //   );
+  // }
 
 
 // Update this method in your HomeScreen class

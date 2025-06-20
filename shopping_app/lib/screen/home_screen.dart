@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shopping_app/login/login_init.dart';
 import 'package:shopping_app/model/category.dart';
 import 'package:shopping_app/model/product.dart';
 import 'package:shopping_app/model/user.dart'; // Import the new product file
@@ -36,38 +35,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _handleLogout(BuildContext context) async {
-    try {
-      bool success = await signOutFromGoogle();
-      if (success) {
-        // Navigate back to login screen
-        if (context.mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => LoginScreen()), //may need to adjust this on both platforms
-          );
-        }
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to sign out'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error signing out: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
 
 
   @override
@@ -75,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: _selectedIndex == 0 ? _buildMainContent() : _buildOtherScreen(),
-      bottomNavigationBar: _buildBottomNavBar(),
+      
     );
   }
 
@@ -83,7 +50,6 @@ Widget _buildMainContent() {
   return SafeArea(
     child: Column(
       children: [
-        _buildHeader(),
         _buildSearchBar(),
         _buildCategoryTabs(),
         Expanded(
@@ -166,81 +132,7 @@ Widget _buildMainContent() {
   }
 
 
-  Widget _buildHeader() { //gonna put in setting
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255,158,129,163),
-      ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => _showUserProfile(),
-            child: CircleAvatar(
-              radius: 20,
-              backgroundImage: widget.user?.photoURL != null 
-                ? NetworkImage(widget.user!.photoURL!)
-                : null,
-              backgroundColor: Colors.grey[300],
-              child: widget.user?.photoURL == null 
-                ? Icon(Icons.person, size: 20, color: Colors.grey[600])
-                : null,
-            ),
-          ),
-          SizedBox(width: 12),
 
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Welcome!",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  widget.user?.displayName ?? 'User',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            )
-          ),
-
-          //umeT logo???
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.orange[400],
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              "umeT",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-          ),
-
-          SizedBox(width: 12),
-          
-          // Logout button
-          IconButton(
-            icon: Icon(Icons.logout, color: Colors.white),
-            onPressed: () => _handleLogout(context),
-            tooltip: 'Logout',
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildSearchBar() {
     return Container(
@@ -397,69 +289,6 @@ Future<List<Category>> _getCategoriesWithAll() async {
 }
 
 
-  Widget _buildBottomNavBar() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: _selectedIndex,
-      onTap: (index) {
-        setState(() {
-          _selectedIndex = index;
-        });
-      },
-      selectedItemColor: Colors.orange[600],
-      unselectedItemColor: Colors.grey[600],
-      items: [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: "Home",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.category),
-          label: "Categories",
-        ),
-        BottomNavigationBarItem( // may not need
-          icon: Icon(Icons.local_shipping),
-          label: "Delivery",
-        ),
-        BottomNavigationBarItem(
-          icon: Stack(
-            children: [
-              Icon(Icons.shopping_cart),
-              if (_cartItemCount > 0)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    constraints: BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      '$_cartItemCount',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          label: "Cart",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: "You",
-        ),
-      ],
-    );
-  }
 
 
 // Update this method in your HomeScreen class
@@ -489,88 +318,4 @@ void _navigateToProductDetail(Product product, UserModel? user) {
   );
 }
 
-  void _showUserProfile() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 50,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              SizedBox(height: 20),
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: widget.user?.photoURL != null 
-                  ? NetworkImage(widget.user!.photoURL!)
-                  : null,
-                backgroundColor: Colors.grey[300],
-                child: widget.user?.photoURL == null 
-                  ? Icon(Icons.person, size: 50, color: Colors.grey[600])
-                  : null,
-              ),
-              SizedBox(height: 16),
-              Text(
-                widget.user?.displayName ?? 'User',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                widget.user?.identifier ?? 'No email',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-              ),
-              SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _handleLogout(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.logout),
-                      SizedBox(width: 8),
-                      Text(
-                        'Sign Out',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
