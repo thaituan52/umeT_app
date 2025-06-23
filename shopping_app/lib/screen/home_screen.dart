@@ -68,9 +68,12 @@ Widget _buildMainContent() {
                         });
                       }
                     },
-                    child: SizedBox(
+                    child: Container(
                       //color: Colors.grey,
                       width: double.infinity,
+                      constraints: BoxConstraints(
+                        minHeight: MediaQuery.of(context).size.height,
+                      ),
                       child: ProductGridWidget(
                               categoryId: _selectedCategoryIndex,
                               searchQuery: _searchQuery,
