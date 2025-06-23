@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, validator
-from sqlalchemy import ForeignKey, create_engine, Column, Integer, String, Boolean, DateTime, or_, text
+from sqlalchemy import ForeignKey, Text, create_engine, Column, Integer, String, Boolean, DateTime, or_, text
 from sqlalchemy.orm import declarative_base, sessionmaker, Session, relationship
 from datetime import datetime
 from typing import List, Optional
@@ -83,6 +83,36 @@ class ProductCategory(Base):
 
     product = relationship("Product", back_populates="product_categories")
     category = relationship("Category", back_populates="category_products")
+
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user_info.id"), nullable = False)
+    status = Column(Integer, default = 1) #0: deactivated, 1: cart, 2: processing, 3: completed
+    total_amount = Column(String(10), default = 0.0)
+    shipping_address = Column(Text, nullable = True)
+    billing_method = Column(String(20), default = "Cash")
+    contact_phone = Column(String(20), nullable = True)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    user = relationship("User")
+    items = relationship("OrderItem", back_populates= "order")
+
+class OrderItem(Base):
+    __tablename__ = "order_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable = False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable = False)
+    quantity = Column(Integer, nullable = False)
+    price_per_unit = Column(String(10), nullable = False)
+    created_at = Column(DateTime, default = datetime.now)
+
+    order = relationship("Order", back_populates= "items")
+    product = relationship("Product")
 
 
 Base.metadata.create_all(bind=engine)
@@ -169,6 +199,46 @@ class ProductResponse(ProductBase):
     categories: List[CategoryResponse] = []
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+
+
+class OrderItemBase(BaseModel):
+    product_id: int
+    quantity: int
+    price_per_unit: float
+
+class OrderItemCreate(OrderItemBase):
+    pass
+
+class OrderItemResponse(OrderItemBase):
+    id: int
+    created_at = datetime
+
+    class Config:
+        from_atrributes = True
+
+
+class OrderBase(BaseModel):
+    user_id: int
+    status: Optional[int] = 1
+    shipping_address: "str"
+    billing_method: Optional[str] = "cash"
+    contact_phone: Optional[str]= None
+
+
+class OrderCreate(OrderBase):
+    items: List[OrderItemCreate]
+
+
+class OrderResponse(BaseModel):
+    id: int
+    total_amount: float
+    created_at: datetime
+    updated_at: datetime
+    items: List[OrderItemResponse]    
+
+    class Config:
+        from_attributes = True
 # ----------------------------------------
 # Password Hashing Utility
 # ----------------------------------------
@@ -348,6 +418,33 @@ def update_product(db: Session, product_id: int, product_update: ProductUpdate):
     db.commit()
     db.refresh(db_product)
     return db_product
+
+
+#maynot use
+def get_order_by_id(db: Session, order_id: int):
+    return db.query(Order).filter(Order.id == order_id).first()
+
+def get_orders_by_user(db: Session, user_id: int, skip: int = 0, limit: int = 100):
+    return db.query(Order).filter(Order.user_id == user_id).offset(skip).limit(limit)
+
+def get_user_cart(db: Session, user_id: int):
+    return db.query(Order).filter(Order.user_id == user_id, Order.status == 1).first()
+
+
+#may need OrderItem.order_id to be unique
+def calculate_order_total(db: Session, order_id: int):
+    items = db.query(OrderItem).filter(OrderItem.order_id == order_id)
+    total = sum(float(item.price_per_unit) * item.quantity for item in items)
+    return total
+
+def create_order(db: Session, order: OrderCreate):
+    order_data = order.model_dump()
+    items_data = order_data.pop('items', [])
+
+    db_order = Order(**order_data)
+    db.add(db_order)
+    db.commit()
+    db.refresh(db_order)
 
 
 # ----------------------------------------
