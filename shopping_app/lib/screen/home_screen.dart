@@ -4,7 +4,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shopping_app/model/category.dart';
 import 'package:shopping_app/model/product.dart';
 import 'package:shopping_app/model/user.dart'; // Import the new product file
-import 'package:shopping_app/screen/product_detail_screen.dart';
 import 'package:shopping_app/service/product_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,7 +16,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
   String _searchQuery = "search";
   int _cartItemCount = 0; // take from cart ? or db
   //List<Category> _categories = [Category(id: 0, name: "All", isActive: true)];
@@ -41,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: _selectedIndex == 0 ? _buildMainContent() : _buildOtherScreen(),
+      body: _buildMainContent(),
       
     );
   }
@@ -88,59 +86,6 @@ Widget _buildMainContent() {
   );
 }
 
-  Widget _buildOtherScreen() {
-    return SafeArea(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              _getIconForIndex(_selectedIndex),
-              size: 80,
-              color: Colors.grey[400],
-            ),
-            SizedBox(height: 20),
-            Text(
-              _getTitleForIndex(_selectedIndex),
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Coming Soon!',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[500],
-              )
-            )            
-          ],
-        ),
-      ),
-    );
-  }
-
-  IconData _getIconForIndex(int index) {
-    switch (index) {
-      case 1: return Icons.category;
-      case 2: return Icons.local_shipping;
-      case 3: return Icons.shopping_cart;
-      case 4: return Icons.person;
-      default: return Icons.home; 
-    }
-  }
-
-  String _getTitleForIndex(int index) {
-    switch (index) {
-      case 1: return 'Categories';
-      case 2: return '3-day Delivery';
-      case 3: return 'Shopping Cart';
-      case 4: return 'Profile';
-      default: return 'Home';
-    }
-  }
 
 
 
@@ -250,83 +195,6 @@ Future<List<Category>> _getCategoriesWithAll() async {
   final categories = await ProductService.getCategories();
   _cacheCategories = [Category(id: 0, name: "All", isActive: true)] + categories;
   return _cacheCategories!;
-}
-
-//   Widget _buildProductGrid() {
-//   return FutureBuilder<List<Product>>(
-//     future: ProductService.getProducts(
-//       categoryId: _selectedCategoryIndex == 0 ? null : _selectedCategoryIndex,
-//       query: _searchQuery == "search" ? '' : _searchQuery,
-//     ),
-//     builder: (context, snapshot) {
-//       if (snapshot.connectionState == ConnectionState.waiting) {
-//         return Center(child: CircularProgressIndicator());
-//       } else if (snapshot.hasError) {
-//         return Center(child: Text('Error: ${snapshot.error}'));
-//       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-//         return Center(child: Text('No products found.'));
-//       } else {
-//         List<Product> products = snapshot.data!;
-//         return GridView.builder(
-//             padding: EdgeInsets.all(8),
-//             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-//               crossAxisCount: 2,
-//               childAspectRatio: 0.65,
-//               crossAxisSpacing: 8,
-//               mainAxisSpacing: 8,
-//             ),
-//             itemCount: products.length,
-//             itemBuilder: (context, index) {
-//               return ProductCard(
-//                 product: products[index],
-//                 onTap: () => _navigateToProductDetail(products[index], widget.user),
-//                 onAddToCart: () {
-//                   setState(() {
-//                     _cartItemCount++;
-//                   });
-//                   ScaffoldMessenger.of(context).showSnackBar(
-//                     SnackBar(
-//                       content: Text("Added to cart!"),
-//                       duration: Duration(seconds: 1),
-//                     ),
-//                   );
-//                 },
-//               );
-//             },
-//           );
-//       }
-//     },
-//   );
-// }
-
-
-
-
-// Update this method in your HomeScreen class
-void _navigateToProductDetail(Product product, UserModel? user) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => ProductDetailScreen(
-        product: product,
-        user: user!,
-        cartItemCount: _cartItemCount, // Pass the cart count here
-        onAddToCart: () {
-          setState(() {
-            _cartItemCount++;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Added to cart")),
-          );
-        },
-        onBuyNow: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Proceeding to checkout...")),
-          );
-        },
-      ),
-    ),
-  );
 }
 
 }

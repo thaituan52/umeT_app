@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_app/model/user.dart';
+import 'package:shopping_app/screen/cart.dart';
+import 'package:shopping_app/screen/cart_screen.dart';
 import 'package:shopping_app/screen/home_screen.dart';
 import 'package:shopping_app/screen/profile_screen.dart';
 
@@ -23,7 +25,8 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _screen.addAll([
       HomeScreen(user: widget.user),
-      HomeScreen(user: widget.user),
+      TemuProfilePage(),
+      //HomeScreen(user: widget.user),
       ProfileScreen(user: widget.user),
     ]);
   }
