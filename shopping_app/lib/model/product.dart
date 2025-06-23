@@ -456,6 +456,10 @@ class ProductCreate {
       } else {
         List<Product> products = snapshot.data!;
         return GridView.builder(
+
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+
             padding: EdgeInsets.all(8),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,

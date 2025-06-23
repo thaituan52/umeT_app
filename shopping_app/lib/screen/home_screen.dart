@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shopping_app/model/category.dart';
 import 'package:shopping_app/model/product.dart';
@@ -20,7 +21,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _cartItemCount = 0; // take from cart ? or db
   //List<Category> _categories = [Category(id: 0, name: "All", isActive: true)];
   List<Category>? _cacheCategories;
-  int _selectedCategoryIndex = 0; 
+  int _selectedCategoryIndex = 0;
+  bool _categoryVisible = true; 
 
   // Google Sign-out method
   Future<bool> signOutFromGoogle() async {
@@ -51,36 +53,55 @@ Widget _buildMainContent() {
         _buildSearchBar(),
         _buildCategoryTabs(),
         Expanded(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onHorizontalDragEnd: (details) {
-              if (details.primaryVelocity! < 0 && _selectedCategoryIndex < (_cacheCategories?.length ?? 1) - 1) {
-                setState(() {
-                  _selectedCategoryIndex++;
-                });
-              } else if (details.primaryVelocity! > 0 && _selectedCategoryIndex > 0) {
-                setState(() {
-                  _selectedCategoryIndex--;
-                });
-              }
-            },
-            child: SizedBox(
-              //color: Colors.grey,
-              width: double.infinity,
-              child: ProductGridWidget(
-                      categoryId: _selectedCategoryIndex,
-                      searchQuery: _searchQuery,
-                      user: widget.user,
-                      cartItemCount: _cartItemCount,
-                      onAddToCartExternal: (product) {
+            child: CustomScrollView(
+              slivers: [
+                // SliverAppBar(
+                //   floating: true,
+                //   snap: true,
+                //   backgroundColor: Colors.white,
+                //   elevation: 0,
+                //   toolbarHeight: 80,
+                //   flexibleSpace: FlexibleSpaceBar(
+                //     background: Padding(
+                //       padding: const EdgeInsets.all(8.0),
+                //       child: _buildCategoryTabs(),
+                //     ),
+                //   ),
+                // ),
+                SliverToBoxAdapter(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onHorizontalDragEnd: (details) {
+                      if (details.primaryVelocity! < 0 && _selectedCategoryIndex < (_cacheCategories?.length ?? 1) - 1) {
                         setState(() {
-                        _cartItemCount++;
+                          _selectedCategoryIndex++;
                         });
-                      },
+                      } else if (details.primaryVelocity! > 0 && _selectedCategoryIndex > 0) {
+                        setState(() {
+                          _selectedCategoryIndex--;
+                        });
+                      }
+                    },
+                    child: SizedBox(
+                      //color: Colors.grey,
+                      width: double.infinity,
+                      child: ProductGridWidget(
+                              categoryId: _selectedCategoryIndex,
+                              searchQuery: _searchQuery,
+                              user: widget.user,
+                              cartItemCount: _cartItemCount,
+                              onAddToCartExternal: (product) {
+                                setState(() {
+                                _cartItemCount++;
+                                });
+                              },
+                        ),
+                      ), 
+                  ),
                 ),
-              ), 
+              ],
+            ),
           ),
-        ),
       ],
     ),
   );

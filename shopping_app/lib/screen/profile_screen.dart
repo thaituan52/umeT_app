@@ -78,19 +78,25 @@ Widget _buildMainContent() {
     child: Column(
       children: [
         _buildHeader(),
-        _buildSearchBar(),
         Expanded(
-          child: ProductGridWidget(
-                  categoryId: 0,
-                  searchQuery: '',
-                  user: widget.user,
-                  cartItemCount: _cartItemCount,
-                  onAddToCartExternal: (product) {
-                    setState(() {
-                    _cartItemCount++;
-                    });
-                  },
-          ), 
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: _buildSearchBar()),
+              SliverToBoxAdapter(
+                child: ProductGridWidget(
+                        categoryId: 0,
+                        searchQuery: '',
+                        user: widget.user,
+                        cartItemCount: _cartItemCount,
+                        onAddToCartExternal: (product) {
+                          setState(() {
+                          _cartItemCount++;
+                          });
+                        },
+                ), 
+              ),
+            ],
+          ),
         ),
       ],
     ),
