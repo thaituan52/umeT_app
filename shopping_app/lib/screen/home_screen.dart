@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shopping_app/model/category.dart';
 import 'package:shopping_app/model/product.dart';
@@ -22,7 +21,6 @@ class _HomeScreenState extends State<HomeScreen> {
   //List<Category> _categories = [Category(id: 0, name: "All", isActive: true)];
   List<Category>? _cacheCategories;
   int _selectedCategoryIndex = 0;
-  bool _categoryVisible = true; 
 
   // Google Sign-out method
   Future<bool> signOutFromGoogle() async {
@@ -55,19 +53,7 @@ Widget _buildMainContent() {
         Expanded(
             child: CustomScrollView(
               slivers: [
-                // SliverAppBar(
-                //   floating: true,
-                //   snap: true,
-                //   backgroundColor: Colors.white,
-                //   elevation: 0,
-                //   toolbarHeight: 80,
-                //   flexibleSpace: FlexibleSpaceBar(
-                //     background: Padding(
-                //       padding: const EdgeInsets.all(8.0),
-                //       child: _buildCategoryTabs(),
-                //     ),
-                //   ),
-                // ),
+
                 SliverToBoxAdapter(
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,

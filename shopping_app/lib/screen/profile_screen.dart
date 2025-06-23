@@ -15,7 +15,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String _searchQuery = "search";
   int _cartItemCount = 0; // take from cart ? or db
   //List<Category> _categories = [Category(id: 0, name: "All", isActive: true)];
 
@@ -135,14 +134,14 @@ Widget _buildMainContent() {
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 20,
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
           ),
 
-          //umeT logo???
           IconButton(
-            icon: Icon(Icons.settings, color: Colors.white),
-            onPressed: () => _handleLogout(context),
+            icon: Icon(Icons.help, color: Colors.white),
+            onPressed: () => (),
             tooltip: 'Settings',
           ),
 
@@ -159,51 +158,123 @@ Widget _buildMainContent() {
     );
   }
 
+  Widget _buildDivider() {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: Colors.grey[200],
+      indent: 56,
+    );
+  }
+
+  Widget _buildMenuButton({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    // String? badge,
+    // String? trailing,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, size: 24),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(width: 8),
+          Icon(Icons.arrow_forward_ios, color: Colors.grey[400], size: 16),
+        ],
+      ),
+      onTap: onTap,
+    );
+  }
+
   Widget _buildSearchBar() {
     return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255,158,129,163),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: TextField(
-              decoration: InputDecoration(
-                prefix: SizedBox(width: 12,),
-                hintText: _searchQuery,
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                suffixIcon: Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Icon( //may add on tap function
-                      Icons.search, color: Colors.grey[600],
+              child: Column(
+                children: [
+                  _buildMenuButton(
+                    context: context,
+                    icon: Icons.settings_outlined,
+                    title: 'Settings',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => IconButton(
+                          icon: Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
                       ),
                     ),
                 ),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                  _buildDivider(),
+                  _buildMenuButton(
+                    context: context,
+                    icon: Icons.shopping_bag_outlined,
+                    title: 'Your orders',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => IconButton(
+                          icon: Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // _buildDivider(),
+                  // _buildMenuButton(
+                  //   icon: Icons.star_border,
+                  //   title: 'Your reviews',
+                  //   onTap: () {},
+                  // ),
+                  // _buildDivider(),
+                  // _buildMenuButton(
+                  //   icon: Icons.local_offer_outlined,
+                  //   title: 'Coupons & offers',
+                  //   onTap: () {},
+                  // ),
+                  _buildDivider(),
+                  _buildMenuButton(
+                    context: context,
+                    icon: Icons.account_balance_wallet_outlined,
+                    title: 'Credit balance',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => IconButton(
+                          icon: Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ),
+                    ),
+                  ),
+                  _buildDivider(),
+                  _buildMenuButton(
+                    context: context,
+                    icon: Icons.location_on_outlined,
+                    title: 'Addresses',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => IconButton(
+                          icon: Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value.isEmpty? "search" : value;
-                });
-              },
-            ),
-          )
-        ],
-      ),
-    );
-  }
+            );
+    }
 
   void _showUserProfile() {
     showModalBottomSheet(
