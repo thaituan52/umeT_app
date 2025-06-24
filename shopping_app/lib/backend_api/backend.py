@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator, validator
 from sqlalchemy import ForeignKey, Text, create_engine, Column, Integer, String, Boolean, DateTime, or_, text
 from sqlalchemy.orm import declarative_base, sessionmaker, Session, relationship
 from datetime import datetime
@@ -132,7 +132,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: Optional[str] = None
     
-    @validator('password')
+    @field_validator('password')
     def validate_password(cls, v):
         if v is not None:
             if len(v) < 8:
@@ -212,7 +212,7 @@ class OrderItemCreate(OrderItemBase):
 
 class OrderItemResponse(OrderItemBase):
     id: int
-    created_at = datetime
+    created_at: datetime
 
     class Config:
         from_atrributes = True
