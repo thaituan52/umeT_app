@@ -1,0 +1,66 @@
+[
+    {
+        "id": 1,
+        "name": "Electronics",
+        "is_active": 1,
+        "created_at": "2025-06-23T15:38:02Z",
+        "updated_at": "2025-06-23T15:38:02Z",
+        "description": "Electronic devices and gadgets"
+    },
+    {
+        "id": 2,
+        "name": "Home & Garden",
+        "is_active": 1,
+        "created_at": "2025-06-23T15:38:02Z",
+        "updated_at": "2025-06-23T15:38:02Z",
+        "description": "Home improvement and gardening items"
+    },
+    {
+        "id": 3,
+        "name": "Fashion",
+        "is_active": 1,
+        "created_at": "2025-06-23T15:38:02Z",
+        "updated_at": "2025-06-23T15:38:02Z",
+        "description": "Clothing and accessories"
+    },
+    {
+        "id": 4,
+        "name": "Sports",
+        "is_active": 1,
+        "created_at": "2025-06-23T15:38:02Z",
+        "updated_at": "2025-06-23T15:38:02Z",
+        "description": "Sports and outdoor equipment"
+    },
+    {
+        "id": 5,
+        "name": "Books",
+        "is_active": 1,
+        "created_at": "2025-06-23T15:38:02Z",
+        "updated_at": "2025-06-23T15:38:02Z",
+        "description": "Books and educational materials"
+    },
+    {
+        "id": 6,
+        "name": "Health & Beauty",
+        "is_active": 1,
+        "created_at": "2025-06-23T15:38:02Z",
+        "updated_at": "2025-06-23T15:38:02Z",
+        "description": "Health and beauty products"
+    },
+    {
+        "id": 7,
+        "name": "Toys",
+        "is_active": 1,
+        "created_at": "2025-06-23T15:38:02Z",
+        "updated_at": "2025-06-23T15:38:02Z",
+        "description": "Toys and games"
+    },
+    {
+        "id": 8,
+        "name": "Automotive",
+        "is_active": 1,
+        "created_at": "2025-06-23T15:38:02Z",
+        "updated_at": "2025-06-23T15:38:02Z",
+        "description": "Car accessories and parts"
+    }
+]

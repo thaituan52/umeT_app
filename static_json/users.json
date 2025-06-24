@@ -1,0 +1,80 @@
+[
+  {
+    "id": 1,
+    "uid": "1234567890",
+    "address": null,
+    "provider": "phone",
+    "is_active": true,
+    "photo_url": null,
+    "created_at": "2025-06-23T15:38:02Z",
+    "identifier": "+1234567890",
+    "last_login": null,
+    "updated_at": "2025-06-23T15:38:02Z",
+    "display_name": "John Doe"
+  },
+  {
+    "id": 2,
+    "uid": "0987654321",
+    "address": null,
+    "provider": "gmail",
+    "is_active": true,
+    "photo_url": null,
+    "created_at": "2025-06-23T15:38:02Z",
+    "identifier": "jane@example.com",
+    "last_login": null,
+    "updated_at": "2025-06-23T15:38:02Z",
+    "display_name": "Gay Smith"
+  },
+  {
+    "id": 3,
+    "uid": "8765436789",
+    "address": null,
+    "provider": "google",
+    "is_active": true,
+    "photo_url": null,
+    "created_at": "2025-06-23T15:38:02Z",
+    "identifier": "google.user@gmail.com",
+    "last_login": null,
+    "updated_at": "2025-06-23T15:38:02Z",
+    "display_name": "Mike Johnson"
+  },
+  {
+    "id": 4,
+    "uid": "test123",
+    "address": null,
+    "provider": "google",
+    "is_active": true,
+    "photo_url": "http://example.com/photo.jpg",
+    "created_at": "2025-06-24T03:01:04Z",
+    "identifier": "test@example.com",
+    "last_login": "2025-06-24T03:33:38Z",
+    "updated_at": "2025-06-24T03:33:38Z",
+    "display_name": "Test User"
+  },
+  {
+    "id": 5,
+    "uid": "QeDurFOJvfcTK3QxQC9PMHnpoWr1",
+    "address": null,
+    "provider": "google",
+    "is_active": true,
+    "photo_url": "https://lh3.googleusercontent.com/a/ACg8ocIZK-OUD_Lr3T9-u61j5OPGdmg_h86XgiYuXmnQia-Xp2JsJarzTQ=s96-c",
+    "created_at": "2025-06-24T03:29:06Z",
+    "identifier": "dothaituan522004@gmail.com",
+    "last_login": "2025-06-24T03:29:06Z",
+    "updated_at": "2025-06-24T03:29:06Z",
+    "display_name": "Đỗ Thái Tuấn"
+  },
+  {
+    "id": 6,
+    "uid": "aK1dhx8XMMdfG2aiZKzjyB803zt2",
+    "address": null,
+    "provider": "google",
+    "is_active": true,
+    "photo_url": "https://lh3.googleusercontent.com/a/ACg8ocKPfdMO4faTrOFSTKXG7gVzJU18XlW7Kk73whZn5sG6zAreWdM=s96-c",
+    "created_at": "2025-06-24T03:31:23Z",
+    "identifier": "tuandothai522004@gmail.com",
+    "last_login": "2025-06-24T03:31:23Z",
+    "updated_at": "2025-06-24T03:31:23Z",
+    "display_name": "Tuan Do"
+  }
+]

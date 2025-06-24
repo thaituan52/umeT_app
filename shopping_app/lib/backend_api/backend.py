@@ -232,6 +232,28 @@ class OrderBase(BaseModel):
 class OrderCreate(OrderBase):
     items: List[OrderItemCreate]
 
+    @field_validator('shipping_address')
+    def validate_shipping_address(cls, v, values):
+        status = values.get('status',1)
+        if status in [2,3] and not v:
+            raise ValueError('Shipping address is required for processing and completed orders')
+        return v
+
+
+class OrderUpdate(BaseModel):
+    status: Optional[int] = None
+    shipping_address: Optional[str] = None
+    billing_method: Optional[str] = None
+    contact_phone: Optional[str] = None
+    items: Optional[List[OrderItemCreate]] = None
+    
+    @field_validator('shipping_address')
+    def validate_shipping_address(cls, v, values):
+        status = values.get('status')
+        # If updating status to processing/completed, require shipping address
+        if status in [2, 3] and not v:
+            raise ValueError('Shipping address is required when updating to processing or completed status')
+        return v
 
 class OrderResponse(BaseModel):
     id: int
@@ -479,6 +501,7 @@ def create_order(db: Session, order: OrderCreate):
     db.refresh(db_order)
 
     return db_order
+
 
 
 # ----------------------------------------
