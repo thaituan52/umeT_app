@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shopping_app/model/category.dart';
-import 'package:shopping_app/model/product.dart';
-import 'package:shopping_app/model/user.dart'; // Import the new product file
+import 'package:shopping_app/models/category.dart';
+import 'package:shopping_app/models/product.dart';
+import 'package:shopping_app/models/user.dart'; // Import the new product file
 import 'package:shopping_app/service/product_service.dart';
 
 class HomeScreen extends StatefulWidget {

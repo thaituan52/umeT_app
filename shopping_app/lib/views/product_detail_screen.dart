@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shopping_app/model/product.dart';
-import 'package:shopping_app/model/user.dart';
-import 'package:shopping_app/screen/cart.dart';
+import 'package:shopping_app/models/product.dart';
+import 'package:shopping_app/models/user.dart';
+import 'package:shopping_app/views/cart.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final UserModel user;

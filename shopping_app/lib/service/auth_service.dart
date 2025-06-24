@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shopping_app/model/user.dart';
+import 'package:shopping_app/models/user.dart';
 
 //need postAPI to check the api need
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shopping_app/model/user.dart';
-import 'package:shopping_app/screen/cart.dart';
-import 'package:shopping_app/screen/cart_screen.dart';
-import 'package:shopping_app/screen/home_screen.dart';
-import 'package:shopping_app/screen/profile_screen.dart';
+import 'package:shopping_app/models/user.dart';
+import 'package:shopping_app/views/cart.dart';
+import 'package:shopping_app/views/cart_screen.dart';
+import 'package:shopping_app/views/home_screen.dart';
+import 'package:shopping_app/views/profile_screen.dart';
 
 
 class MainScreen extends StatefulWidget {

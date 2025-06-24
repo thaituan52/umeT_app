@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shopping_app/login/login_init.dart';
-import 'package:shopping_app/model/user.dart';
-import 'package:shopping_app/screen/main_screen.dart';
+import 'package:shopping_app/views/login_screen.dart';
+import 'package:shopping_app/models/user.dart';
+import 'package:shopping_app/views/main_screen.dart';
 
 
 

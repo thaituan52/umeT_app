@@ -1,8 +1,8 @@
 // lib/services/product_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shopping_app/model/category.dart';
-import 'package:shopping_app/model/product.dart';
+import 'package:shopping_app/models/category.dart';
+import 'package:shopping_app/models/product.dart';
 
 //need postAPI to check the api need
 
