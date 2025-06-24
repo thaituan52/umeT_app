@@ -446,6 +446,34 @@ def create_order(db: Session, order: OrderCreate):
     db.commit()
     db.refresh(db_order)
 
+    total_amount = 0.0
+
+    for item_data in items_data:
+        product = get_product_by_id(db, item_data['product_id'])
+        if not product:
+            db.rollback()
+            raise ValueError(f"Product with ID {item_data['product_id']} not found")
+        
+        
+        price_per_unit = str(item_data['price_per_unit'])
+        
+        db_item = OrderItem(
+            order_id = db_order.id,
+            product_id = item_data['product_id'],
+            quantity = item_data['quantity'],
+            price_per_unit=price_per_unit
+        )
+
+        db.add(db_item)
+        total_amount += float(price_per_unit) * item_data['quantity']
+
+    
+    db_order.total_amount = str(total_amount)
+    db.commit()
+    db.refresh(db_order)
+
+    return db_order
+
 
 # ----------------------------------------
 # API Endpoints
