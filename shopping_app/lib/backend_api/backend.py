@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, field_validator, validator
 from sqlalchemy import ForeignKey, Text, create_engine, Column, Integer, String, Boolean, DateTime, or_, text
 from sqlalchemy.orm import declarative_base, sessionmaker, Session, relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 import hashlib
 import os
@@ -36,8 +36,9 @@ class User(Base):
     password_hash = Column(String(255), nullable=True)  # SHA-256 hashed password
     is_active = Column(Boolean, default=True)
     last_login = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
 
 class Category(Base):
     __tablename__ = "categories"
@@ -46,8 +47,8 @@ class Category(Base):
     name = Column(String(100), unique=True, nullable=False)
     description = Column(String(500), nullable=True)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow) #might delete
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow) #might delete
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     category_products = relationship("ProductCategory", back_populates="category")
 
@@ -67,8 +68,9 @@ class Product(Base):
     seller_info = Column(String(255), nullable=True)
     stock_quantity = Column(Integer, default=0)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
 
     product_categories = relationship("ProductCategory", back_populates="product")
 
@@ -79,7 +81,7 @@ class ProductCategory(Base):
     id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)  
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)  
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     product = relationship("Product", back_populates="product_categories")
     category = relationship("Category", back_populates="category_products")
@@ -95,8 +97,9 @@ class Order(Base):
     shipping_address = Column(Text, nullable = True)
     billing_method = Column(String(20), default = "Cash")
     contact_phone = Column(String(20), nullable = True)
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
 
     user = relationship("User")
     items = relationship("OrderItem", back_populates= "order")
@@ -109,7 +112,7 @@ class OrderItem(Base):
     product_id = Column(Integer, ForeignKey("products.id"), nullable = False)
     quantity = Column(Integer, nullable = False)
     price_per_unit = Column(String(10), nullable = False)
-    created_at = Column(DateTime, default = datetime.now)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     order = relationship("Order", back_populates= "items")
     product = relationship("Product")
@@ -293,13 +296,13 @@ def create_or_update_user(db: Session, user_data: dict):
         for key, value in user_data.items():
             if value is not None and hasattr(user, key):
                 setattr(user, key, value)
-        user.updated_at = datetime.now()
+        user.updated_at = datetime.now(timezone.utc)
     else:
         # Create new user - now user_data doesn't contain 'password'
         user = User(**user_data)
         db.add(user)
     
-    user.last_login = datetime.now()
+    user.last_login = datetime.now(timezone.utc)
     db.commit()
     db.refresh(user)
     return user
@@ -414,7 +417,7 @@ def update_product(db: Session, product_id: int, product_update: ProductUpdate):
             db_product_category = ProductCategory(product_id=product_id, category_id=category_id)
             db.add(db_product_category)
     
-    db_product.updated_at = datetime.utcnow()
+    db_product.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(db_product)
     return db_product
@@ -733,7 +736,7 @@ async def delete_product(product_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Product not found")
     
     product.is_active = False
-    product.updated_at = datetime.utcnow()
+    product.updated_at = datetime.now(timezone.utc)
     db.commit()
     
     return {"message": "Product deleted successfully"}
