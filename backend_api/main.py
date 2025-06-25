@@ -5,8 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # Import your database base for metadata.create_all
 from .database import Base, engine 
 # Import your API routers
-from .api import users, categories, products
-#, orders # Assuming you'll create these
+from .api import users, categories, products, orders # Assuming you'll create these
 
 app = FastAPI(
     title="Shopping_app API",
@@ -26,7 +25,7 @@ app.add_middleware(
 app.include_router(users.router)
 app.include_router(categories.router)
 app.include_router(products.router)
-#app.include_router(orders.router)
+app.include_router(orders.router)
 
 # Health Check
 @app.get("/")

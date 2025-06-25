@@ -7,7 +7,7 @@
 
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ValidationInfo, field_validator
 
 
 class UserBase(BaseModel):
@@ -110,8 +110,8 @@ class OrderItemResponse(OrderItemBase):
 class OrderBase(BaseModel):
     user_id: int
     status: Optional[int] = 1
-    shipping_address: "str"
-    billing_method: Optional[str] = "cash"
+    shipping_address: Optional[str] = None
+    billing_method: Optional[str] = "Cash"
     contact_phone: Optional[str]= None
 
 
@@ -119,8 +119,8 @@ class OrderCreate(OrderBase):
     items: List[OrderItemCreate]
 
     @field_validator('shipping_address')
-    def validate_shipping_address(cls, v, values):
-        status = values.get('status',1)
+    def validate_shipping_address(cls, v, info: ValidationInfo):
+        status = info.data.get('status',1)
         if status in [2,3] and not v:
             raise ValueError('Shipping address is required for processing and completed orders')
         return v
@@ -134,8 +134,8 @@ class OrderUpdate(BaseModel):
     items: Optional[List[OrderItemCreate]] = None
     
     @field_validator('shipping_address')
-    def validate_shipping_address(cls, v, values):
-        status = values.get('status')
+    def validate_shipping_address(cls, v, info: ValidationInfo):
+        status = info.data.get('status')
         # If updating status to processing/completed, require shipping address
         if status in [2, 3] and not v:
             raise ValueError('Shipping address is required when updating to processing or completed status')

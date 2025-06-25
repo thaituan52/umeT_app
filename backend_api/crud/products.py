@@ -78,7 +78,7 @@ def update_product(db: Session, product_id: int, product_update: ProductUpdate):
     if not db_product:
         return None
     
-    update_data = product_update.dict(exclude_unset=True)
+    update_data = product_update.model_dump(exclude_unset=True)
     category_ids = update_data.pop('category_ids', None)
     
     # Convert numeric fields to strings
