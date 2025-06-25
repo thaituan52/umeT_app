@@ -57,13 +57,16 @@ class _LoginScreenState extends State<LoginScreen> {
             builder: (context) => MainScreen(user: userModel),
           ),
         );
+        return; // Exit the method after navigation
       }
     } catch (e) {
       _showMessage('Error handling $method sign-in: $e');
     } finally {
-      setState(() {
-      _isLoading = false; // Reset loading state after handling the method
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false; // Reset loading state after handling the method
+        });
+      }
     }
     //Should make a way to log in via the selected method
   }
