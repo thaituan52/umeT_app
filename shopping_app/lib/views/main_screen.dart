@@ -25,8 +25,7 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _screen.addAll([
       HomeScreen(user: widget.user),
-      //TemuProfilePage(),
-      HomeScreen(user: widget.user),
+      CartScreen(user: widget.user!),
       ProfileScreen(user: widget.user),
     ]);
   }

@@ -81,4 +81,13 @@ class AuthService {
   // static Future<UserModel?> handleFacebookSignIn() {...}
   // static Future<UserModel?> handleEmailSignIn() {...}
   // static Future<UserModel?> handlePhoneSignIn() {...}
+
+  // @router.get("/{uid}", response_model=UserResponse)
+// async def read_user_endpoint(uid: str, db: Session = Depends(get_db)):
+//     """Get user by Firebase UID"""
+//     db_user = crud_users.get_user_by_uid(db, uid=uid)
+//     if db_user is None:
+//         raise HTTPException(status_code=404, detail="User not found")
+//     return db_user
+// lib/services/cart_service.dart
 }

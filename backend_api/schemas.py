@@ -101,6 +101,7 @@ class OrderItemCreate(OrderItemBase):
 
 class OrderItemResponse(OrderItemBase):
     id: int
+    #order_id: int
     created_at: datetime
 
     class Config:

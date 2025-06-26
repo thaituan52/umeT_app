@@ -296,7 +296,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CartScreen(cartItemCount: widget.cartItemCount), // Use widget.cartItemCount
+        builder: (context) => CartScreen(user: widget.user), // Use widget.cartItemCount
       ),
     );
   }

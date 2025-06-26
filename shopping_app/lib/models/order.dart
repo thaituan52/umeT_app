@@ -24,22 +24,38 @@ class Order {
     required this.updatedAt, 
     required this.items});
 
-  factory Order.fromJson(Map<String, dynamic> json) {
-    return Order(
-      id: json['id'] as int,
-      userId: json['userId'] as int,
-      status: json['status'] as int,
-      totalAmount: (json['totalAmount'] as num).toDouble(),
-      shippingAdress: json['shippingAdress'] as String?,
-      billingMethod: json['billingMethod'] as String?,
-      contactPhone: json['contactPhone'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-      items: (json['items'] as List<dynamic>)
-          .map((item) => OrderItem.fromJson(item as Map<String, dynamic>))
-          .toList(),
-    );
-  }
+// In your Order class
+//respond dont have userId and status
+factory Order.fromJson(Map<String, dynamic> json, {int userId = 1, int status = 1}) {
+  final totalAmount = (json['total_amount'] as num?)?.toDouble() ?? 0.0;
+  final createdAt = json['created_at'] != null 
+    ? DateTime.parse(json['created_at'] as String) 
+    : DateTime.now(); // Fallback to now if not available
+
+  final updatedAt = json['updated_at'] != null 
+    ? DateTime.parse(json['updated_at'] as String) 
+    : DateTime.now(); // Fallback to now if not available
+  final id = json['id'] as int;
+  final items = (json['items'] as List<dynamic>?) // Use a nullable list
+      ?.map((item) => OrderItem.fromJson(item as Map<String, dynamic>))
+      .toList() ?? []; // Provide an empty list if 'items' is null
+
+  return Order(
+    id: id,
+    // Add dummy values for userId and status for now, as they are not in the JSON.
+    // You should get these from your API or another source.
+    userId: userId, 
+    status: status, //userCart's status is always 1
+    
+    totalAmount: totalAmount,
+    shippingAdress: json['shippingAdress'] as String?,
+    billingMethod: json['billingMethod'] as String?,
+    contactPhone: json['contactPhone'] as String?,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
+    items: items,
+  );
+}
 
   
 }

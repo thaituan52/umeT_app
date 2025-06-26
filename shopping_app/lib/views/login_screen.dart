@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shopping_app/widgets/login_button.dart';
 import 'package:shopping_app/models/user.dart'; // Import the login screen
 import 'package:shopping_app/views/main_screen.dart';
-import 'package:shopping_app/service/auth_service.dart'; // Import the UserModel
+import 'package:shopping_app/service/user_service.dart'; // Import the UserModel
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

@@ -128,6 +128,7 @@ async def get_user_cart_endpoint(user_id: int, db: Session = Depends(get_db)):
     for item in cart.items:
         items.append(OrderItemResponse(
             id=item.id,
+           # order_id=cart.id, #order id if need
             product_id=item.product_id,
             quantity=item.quantity,
             price_per_unit=float(item.price_per_unit),
@@ -146,7 +147,7 @@ async def get_user_cart_endpoint(user_id: int, db: Session = Depends(get_db)):
         updated_at=cart.updated_at,
         items=items
     )
-
+# USING TO ADD ITEM TO CART
 @router.post("/users/{user_id}/cart/items/")
 async def add_to_cart(
     user_id: int,
@@ -258,7 +259,7 @@ async def delete_order_item(item_id: int, db: Session = Depends(get_db)):
         order.updated_at = datetime.utcnow()
         db.commit()
     
-    return {"message": "Order item removed successfully"}
+    return order
 
 # ----------------------------------------
 # Additional Utility Endpoints
