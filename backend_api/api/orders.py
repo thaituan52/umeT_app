@@ -35,7 +35,7 @@ async def create_order_endpoint(order: OrderCreate, db: Session = Depends(get_db
         
         return OrderResponse(
             id=db_order.id,
-            user_id=db_order.user_id,
+            user_uid=db_order.user_uid,
             status=db_order.status,
             total_amount=float(db_order.total_amount),
             shipping_address=db_order.shipping_address,
@@ -68,7 +68,7 @@ async def get_order(order_id: int, db: Session = Depends(get_db)):
     
     return OrderResponse(
         id=order.id,
-        user_id=order.user_id,
+        user_uid=order.user_uid,
         status=order.status,
         total_amount=float(order.total_amount),
         shipping_address=order.shipping_address,
@@ -79,15 +79,15 @@ async def get_order(order_id: int, db: Session = Depends(get_db)):
         items=items
     )
 
-@router.get("/users/{user_id}/orders/", response_model=List[OrderResponse])
+@router.get("/users/{user_uid}/orders/", response_model=List[OrderResponse])
 async def get_user_orders(
-    user_id: int, 
+    user_uid: int, 
     skip: int = 0, 
     limit: int = 100, 
     db: Session = Depends(get_db)
 ):
     """Get all orders for a specific user"""
-    orders = crud_orders.get_orders_by_user(db, user_id, skip=skip, limit=limit)
+    orders = crud_orders.get_orders_by_user(db, user_uid, skip=skip, limit=limit)
     
     result = []
     for order in orders:
@@ -103,7 +103,7 @@ async def get_user_orders(
         
         result.append(OrderResponse(
             id=order.id,
-            user_id=order.user_id,
+            user_uid=order.user_uid,
             status=order.status,
             total_amount=float(order.total_amount),
             shipping_address=order.shipping_address,
@@ -116,10 +116,10 @@ async def get_user_orders(
     
     return result
 
-@router.get("/users/{user_id}/cart/", response_model=OrderResponse)
-async def get_user_cart_endpoint(user_id: int, db: Session = Depends(get_db)):
+@router.get("/users/{user_uid}/cart/", response_model=OrderResponse)
+async def get_user_cart_endpoint(user_uid: str, db: Session = Depends(get_db)):
     """Get user's active cart"""
-    cart = crud_orders.get_user_cart(db, user_id)
+    cart = crud_orders.get_user_cart(db, user_uid)
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found")
     
@@ -137,7 +137,7 @@ async def get_user_cart_endpoint(user_id: int, db: Session = Depends(get_db)):
     
     return OrderResponse(
         id=cart.id,
-        user_id=cart.user_id,
+        user_uid=cart.user_uid,
         status=cart.status,
         total_amount=float(cart.total_amount),
         shipping_address=cart.shipping_address,
@@ -148,16 +148,16 @@ async def get_user_cart_endpoint(user_id: int, db: Session = Depends(get_db)):
         items=items
     )
 # USING TO ADD ITEM TO CART
-@router.post("/users/{user_id}/cart/items/")
+@router.post("/users/{user_uid}/cart/items/")
 async def add_to_cart(
-    user_id: int,
+    user_uid: int,
     product_id: int,
     quantity: int = 1,
     db: Session = Depends(get_db)
 ):
     """Add item to user's cart"""
     try:
-        cart = crud_orders.add_item_to_cart(db, user_id, product_id, quantity)
+        cart = crud_orders.add_item_to_cart(db, user_uid, product_id, quantity)
         return {"message": "Item added to cart", "cart_id": cart.id}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -187,7 +187,7 @@ async def update_order_endpoint(
         
         return OrderResponse(
             id=db_order.id,
-            user_id=db_order.user_id,
+            user_uid=db_order.user_uid,
             status=db_order.status,
             total_amount=float(db_order.total_amount),
             shipping_address=db_order.shipping_address,
@@ -294,7 +294,7 @@ async def get_all_orders(
         
         result.append({
             "id": order.id,
-            "user_id": order.user_id,
+            "user_uid": order.user_uid,
             "status": order.status,
             "total_amount": float(order.total_amount),
             "shipping_address": order.shipping_address,

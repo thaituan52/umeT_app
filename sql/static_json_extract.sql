@@ -70,7 +70,7 @@ SELECT JSON_ARRAYAGG(
 SELECT JSON_ARRAYAGG(
     JSON_OBJECT(
         'id', o.id,
-        'user_id', o.user_id,
+        'user_uid', o.user_uid,
         'status', o.status,
         'total_amount', o.total_amount,
         'shipping_address', o.shipping_address,

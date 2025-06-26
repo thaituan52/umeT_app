@@ -74,7 +74,7 @@ class Order(Base):
     __tablename__ = "orders"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("user_info.id"), nullable = False)
+    user_uid = Column(Text, ForeignKey("user_info.uid"), nullable = False)
     status = Column(Integer, default = 1) #0: deactivated, 1: cart, 2: processing, 3: completed
     total_amount = Column(String(10), default = 0.0)
     shipping_address = Column(Text, nullable = True)

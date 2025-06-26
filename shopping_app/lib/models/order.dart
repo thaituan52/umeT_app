@@ -2,7 +2,7 @@ import 'order_item.dart';
 
 class Order {
   final int id;
-  final int userId;
+  final String userUid;
   final int status;
   final double totalAmount;
   final String? shippingAdress;
@@ -14,7 +14,7 @@ class Order {
 
   Order({
     required this.id, 
-    required this.userId, 
+    required this.userUid, 
     required this.status, 
     required this.totalAmount, 
     required this.shippingAdress, 
@@ -26,7 +26,7 @@ class Order {
 
 // In your Order class
 //respond dont have userId and status
-factory Order.fromJson(Map<String, dynamic> json, {int userId = 1, int status = 1}) {
+factory Order.fromJson(Map<String, dynamic> json, userUid, {int status = 1}) {
   final totalAmount = (json['total_amount'] as num?)?.toDouble() ?? 0.0;
   final createdAt = json['created_at'] != null 
     ? DateTime.parse(json['created_at'] as String) 
@@ -44,7 +44,7 @@ factory Order.fromJson(Map<String, dynamic> json, {int userId = 1, int status = 
     id: id,
     // Add dummy values for userId and status for now, as they are not in the JSON.
     // You should get these from your API or another source.
-    userId: userId, 
+    userUid: userUid, 
     status: status, //userCart's status is always 1
     
     totalAmount: totalAmount,

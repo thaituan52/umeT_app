@@ -10,11 +10,11 @@ from ..models import Order, OrderItem
 def get_order_by_id(db: Session, order_id: int):
     return db.query(Order).filter(Order.id == order_id).first()
 
-def get_orders_by_user(db: Session, user_id: int, skip: int = 0, limit: int = 100):
-    return db.query(Order).filter(Order.user_id == user_id).offset(skip).limit(limit)
+def get_orders_by_user(db: Session, user_uid: str, skip: int = 0, limit: int = 100):
+    return db.query(Order).filter(Order.user_uid == user_uid).offset(skip).limit(limit)
 
-def get_user_cart(db: Session, user_id: int):
-    return db.query(Order).filter(Order.user_id == user_id, Order.status == 1).first()
+def get_user_cart(db: Session, uid: str):
+    return db.query(Order).filter(Order.user_uid == uid, Order.status == 1).first()
 
 
 # may need OrderItem.order_id to be unique
@@ -71,11 +71,11 @@ def update_order(db: Session, order_id: int, order_update: OrderUpdate):
 
 def create_order(db: Session, order: OrderCreate):
 
-    user_id = order.user_id
+    user_uid = order.user_uid
     requested_status = order.status
 
     existing_order = db.query(Order).filter(
-        Order.user_id == user_id,
+        Order.user_uid == user_uid,
         Order.status == requested_status
     ).first()
 
@@ -112,11 +112,11 @@ def create_order(db: Session, order: OrderCreate):
     return db_order
 
 
-def add_item_to_cart(db: Session, user_id: int, product_id: int, quantity: int):
+def add_item_to_cart(db: Session, user_uid: str, product_id: int, quantity: int):
     #Get or create cart for user
-    cart = get_user_cart(db, user_id)
+    cart = get_user_cart(db, user_uid)
     if not cart:
-        cart = Order(user_id=user_id, status = 1)
+        cart = Order(user_uid=user_uid, status = 1)
         db.add(cart)
         db.commit()
         db.refresh(cart)

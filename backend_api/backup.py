@@ -91,7 +91,7 @@ class Order(Base):
     __tablename__ = "orders"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("user_info.id"), nullable = False)
+    user_uid = Column(Text, ForeignKey("user_info.id"), nullable = False) #May change later
     status = Column(Integer, default = 1) #0: deactivated, 1: cart, 2: processing, 3: completed
     total_amount = Column(String(10), default = 0.0)
     shipping_address = Column(Text, nullable = True)
@@ -222,7 +222,7 @@ class OrderItemResponse(OrderItemBase):
 
 
 class OrderBase(BaseModel):
-    user_id: int
+    user_uid: str
     status: Optional[int] = 1
     shipping_address: "str"
     billing_method: Optional[str] = "cash"
@@ -449,11 +449,11 @@ def update_product(db: Session, product_id: int, product_update: ProductUpdate):
 def get_order_by_id(db: Session, order_id: int):
     return db.query(Order).filter(Order.id == order_id).first()
 
-def get_orders_by_user(db: Session, user_id: int, skip: int = 0, limit: int = 100):
-    return db.query(Order).filter(Order.user_id == user_id).offset(skip).limit(limit)
+def get_orders_by_user(db: Session, user_uid: str, skip: int = 0, limit: int = 100):
+    return db.query(Order).filter(Order.user_uid == user_uid).offset(skip).limit(limit)
 
-def get_user_cart(db: Session, user_id: int):
-    return db.query(Order).filter(Order.user_id == user_id, Order.status == 1).first()
+def get_user_cart(db: Session, user_uid: str):
+    return db.query(Order).filter(Order.user_uid == user_uid, Order.status == 1).first()
 
 
 # may need OrderItem.order_id to be unique

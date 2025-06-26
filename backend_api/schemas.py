@@ -109,7 +109,7 @@ class OrderItemResponse(OrderItemBase):
 
 
 class OrderBase(BaseModel):
-    user_id: int
+    user_uid: Optional[str] = None
     status: Optional[int] = 1
     shipping_address: Optional[str] = None
     billing_method: Optional[str] = "Cash"

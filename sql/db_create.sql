@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS product_categories (
 -- Orders table
 CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_uid VARCHAR(500),
     status INT DEFAULT 1,  -- 0: deactivated, 1: cart, 2: processing, 3: completed
     total_amount DECIMAL(10, 2) DEFAULT 0.0,
     shipping_address TEXT,
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS orders (
     contact_phone VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES user_info(id) ON DELETE CASCADE
+    FOREIGN KEY (user_uid) REFERENCES user_info(uid) ON DELETE CASCADE
 );
 
 -- Order items table

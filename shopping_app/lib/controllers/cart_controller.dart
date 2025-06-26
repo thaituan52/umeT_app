@@ -12,9 +12,9 @@ class CartController extends ChangeNotifier {
   List<OrderItem> _cartItems = [];
   bool _isLoading = false;
   String? _error;
-  int _userId;
+  String _userUid;
 
-  CartController({required UserModel user}) : _userId = 5; 
+  CartController({required UserModel user}) : _userUid = user.uid; 
   //I am still get some trouble with the usermodel dont have the id so now just working on a specific user
 
   // Getters
@@ -31,7 +31,7 @@ class CartController extends ChangeNotifier {
     _error = null;
 
     try {
-      _cart = await _cartService.getUserCart(_userId);
+      _cart = await _cartService.getUserCart(_userUid);
       _cartItems = _cart?.items ?? [];
     } catch (e) {
       _error = e.toString();
@@ -47,7 +47,7 @@ class CartController extends ChangeNotifier {
     {int quantity = 1
     }) async {
       try {
-        final success = await _cartService.addItemToCart(_userId, productId, quantity: quantity);
+        final success = await _cartService.addItemToCart(_userUid, productId, quantity: quantity);
         if (success) {
           await loadCart();
           return true;
