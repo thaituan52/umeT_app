@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_app/models/product.dart';
 import 'package:shopping_app/models/user.dart';
-import 'package:shopping_app/views/cart.dart';
+import 'package:shopping_app/views/cart_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final UserModel user;
@@ -247,7 +247,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: isDragging ? 0.5 : 0.2),
             blurRadius: 8,
             offset: Offset(0, 4),
           ),
