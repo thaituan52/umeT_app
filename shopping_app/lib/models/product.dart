@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:shopping_app/models/category.dart';
-import 'package:shopping_app/models/user.dart';
-import 'package:shopping_app/views/product_detail_screen.dart';
-import 'package:shopping_app/service/product_service.dart';
+import './category.dart';
 
 class Product { //model for products so that I can put to db later like user
   final int id;
