@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../controllers/cart_controller.dart';
 import '../models/user.dart';
+import 'check_out_screen.dart';
 
 class CartScreen extends StatefulWidget {
   final UserModel user;
@@ -372,10 +373,24 @@ Widget _buildCartItems(CartController controller) {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton( //procedding to payment page
-              onPressed: controller.isLoading || controller.cartItemCount == 0 ? null : () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Proceeding to checkout...")),
+              onPressed: controller.isLoading || controller.totalAmount == 0.0 ? 
+              null : 
+              () async {
+                final success = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CheckoutScreen(
+                      user: widget.user,
+                      order: controller.cart!,
+                    ),
+                  ),
                 );
+                if (success == true && mounted) {
+                  _cartController.refreshCart(); // clear cart or refresh
+                  ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Payment completed!')),
+                );
+              }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
