@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_app/models/user.dart';
 import 'package:shopping_app/views/cart_screen.dart';
-import 'package:shopping_app/views/temu.dart';
 import 'package:shopping_app/views/home_screen.dart';
 import 'package:shopping_app/views/profile_screen.dart';
 

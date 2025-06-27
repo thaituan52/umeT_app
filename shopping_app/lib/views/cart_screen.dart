@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../controllers/cart_controller.dart';
-import '../models/order_item.dart';
-import '../models/product.dart';
 import '../models/user.dart';
 
 class CartScreen extends StatefulWidget {
@@ -235,56 +233,10 @@ Widget _buildCartItems(CartController controller) {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(8),
               ),
-              child: Center(
-                    child: controller.getImageUrl(cartItemDetails) != null
-                      ? Image.network(
-                          controller.getImageUrl(cartItemDetails)!,
-                          height: 300,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              height: 300,
-                              width: double.infinity,
-                              color: Colors.grey[300],
-                              child: Icon(
-                                Icons.image_not_supported,
-                                size: 80,
-                                color: Colors.grey[600],
-                              ),
-                            );
-                          },
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              height: 300,
-                              width: double.infinity,
-                              color: Colors.grey[300],
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
-                                ),
-                              ),
-                            );
-                          },
-                        )
-                      : Container(
-                          height: 300,
-                          width: double.infinity,
-                          color: Colors.grey[300],
-                          child: Icon(
-                            Icons.image,
-                            size: 80,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                  ),
+              child: controller.productIcon(cartItemDetails),
             ),
             SizedBox(width: 16),
             Expanded(
@@ -323,7 +275,7 @@ Widget _buildCartItems(CartController controller) {
                 IconButton(
                   onPressed: controller.isLoading ? null : () async {
                     final success = await controller.removeItem(cartItemDetails.orderItem.id);
-                    if (!success && controller.error != null) {
+                    if (!success && controller.error != null && mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Failed to remove item: ${controller.error}'),
@@ -353,7 +305,7 @@ Widget _buildCartItems(CartController controller) {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withAlpha(2),
             blurRadius: 8,
             offset: Offset(0, -2),
           ),

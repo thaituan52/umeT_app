@@ -20,7 +20,6 @@ class CartService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        print(data);
         return Order.fromJson(data, userUid, status:  1);
       } else if (response.statusCode == 404) {
           return null; //cart not found
