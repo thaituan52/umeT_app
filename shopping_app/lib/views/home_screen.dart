@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 
+
 import '../models/category.dart';
 import '../models/user.dart'; // Import the new product file
-import '../service/product_service.dart';
+import '../service/categories_service.dart';
 import '../widgets/product_grid.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -204,7 +205,7 @@ Future<List<Category>> _getCategoriesWithAll() async {
     return _cacheCategories!;
   }
 
-  final categories = await ProductService.getCategories();
+  final categories = await CategoriesService.getCategories();
   _cacheCategories = [Category(id: 0, name: "All", isActive: true)] + categories;
   return _cacheCategories!;
 }

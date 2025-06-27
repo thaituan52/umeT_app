@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../controllers/cart_controller.dart';
 import '../models/order_item.dart';
+import '../models/product.dart';
 import '../models/user.dart';
 
 class CartScreen extends StatefulWidget {
@@ -71,7 +72,7 @@ class _CartScreenState extends State<CartScreen> {
             }
 
             if (controller.cartItemCount == 0) {
-              return _buildEmptyCart();
+              return _buildEmptyCart(canPop);
             }
 
             return _buildCartItems(controller);
@@ -152,7 +153,7 @@ class _CartScreenState extends State<CartScreen> {
       ),
     );
   }
-  Widget _buildEmptyCart() {
+  Widget _buildEmptyCart(bool canPop) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -179,22 +180,24 @@ class _CartScreenState extends State<CartScreen> {
               color: Colors.grey[500],
             ),
           ),
-          SizedBox(height: 30),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
+            if (canPop) ...[
+            SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-            ),
-            child: Text(
+              ),
+              child: Text(
               'Start Shopping',
               style: TextStyle(fontSize: 16),
+              ),
             ),
-          ),
+            ],
         ],
       ),
     );
@@ -208,10 +211,10 @@ Widget _buildCartItems(CartController controller) {
             onRefresh: controller.refreshCart,
             child: ListView.builder(
               padding: EdgeInsets.all(16),
-              itemCount: controller.cartItems.length,
+              itemCount: controller.cartItemsWithDetails.length,
               itemBuilder: (context, index) {
-                final item = controller.cartItems[index];
-                return _buildCartItemCard(item, controller);
+                final cartItemDetails = controller.cartItemsWithDetails[index];
+                return _buildCartItemCard(cartItemDetails, controller);
               },
             ),
           ),
@@ -221,7 +224,7 @@ Widget _buildCartItems(CartController controller) {
     );
   }
 
-  Widget _buildCartItemCard(OrderItem item, CartController controller) {
+  Widget _buildCartItemCard(CartItemDetails cartItemDetails, CartController controller) {
     return Card(
       margin: EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -235,11 +238,53 @@ Widget _buildCartItems(CartController controller) {
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                Icons.image,
-                size: 40,
-                color: Colors.grey[400],
-              ),
+              child: Center(
+                    child: controller.getImageUrl(cartItemDetails) != null
+                      ? Image.network(
+                          controller.getImageUrl(cartItemDetails)!,
+                          height: 300,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 300,
+                              width: double.infinity,
+                              color: Colors.grey[300],
+                              child: Icon(
+                                Icons.image_not_supported,
+                                size: 80,
+                                color: Colors.grey[600],
+                              ),
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              height: 300,
+                              width: double.infinity,
+                              color: Colors.grey[300],
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          height: 300,
+                          width: double.infinity,
+                          color: Colors.grey[300],
+                          child: Icon(
+                            Icons.image,
+                            size: 80,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                  ),
             ),
             SizedBox(width: 16),
             Expanded(
@@ -247,7 +292,7 @@ Widget _buildCartItems(CartController controller) {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Product ${item.productId}',
+                    'Product ${cartItemDetails.orderItem.productId}',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -255,7 +300,7 @@ Widget _buildCartItems(CartController controller) {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    'Product ID: ${item.productId}',
+                    'Product ID: ${cartItemDetails.orderItem.productId}',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
@@ -263,7 +308,7 @@ Widget _buildCartItems(CartController controller) {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    '\$${item.pricePerUnit.toStringAsFixed(2)}',
+                    '\$${cartItemDetails.orderItem.pricePerUnit.toStringAsFixed(2)}',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -277,7 +322,7 @@ Widget _buildCartItems(CartController controller) {
               children: [
                 IconButton(
                   onPressed: controller.isLoading ? null : () async {
-                    final success = await controller.removeItem(item.id);
+                    final success = await controller.removeItem(cartItemDetails.orderItem.id);
                     if (!success && controller.error != null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -292,7 +337,7 @@ Widget _buildCartItems(CartController controller) {
                     color: controller.isLoading ? Colors.grey : Colors.red,
                   ),
                 ),
-                Text('Qty: ${item.quantity}'),
+                Text('Qty: ${cartItemDetails.orderItem.quantity}'),
               ],
             ),
           ],
