@@ -244,7 +244,7 @@ Widget _buildCartItems(CartController controller) {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Product ${cartItemDetails.orderItem.productId}',
+                    cartItemDetails.product.name,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -252,7 +252,7 @@ Widget _buildCartItems(CartController controller) {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    'Product ID: ${cartItemDetails.orderItem.productId}',
+                    '${cartItemDetails.product.description}',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
@@ -274,6 +274,23 @@ Widget _buildCartItems(CartController controller) {
               children: [
                 IconButton(
                   onPressed: controller.isLoading ? null : () async {
+                    final success = await controller.addItemToCart(cartItemDetails.product.id);
+                    if (!success && controller.error != null && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Failed to add item: ${controller.error}'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  icon: Icon(
+                    Icons.add, 
+                    color: controller.isLoading ? Colors.red : Colors.grey,
+                  ),
+                ),
+                IconButton(
+                  onPressed: controller.isLoading ? null : () async {
                     final success = await controller.removeItem(cartItemDetails.orderItem.id);
                     if (!success && controller.error != null && mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -287,6 +304,24 @@ Widget _buildCartItems(CartController controller) {
                   icon: Icon(
                     Icons.delete_outline, 
                     color: controller.isLoading ? Colors.grey : Colors.red,
+                  ),
+                ),
+                if(cartItemDetails.orderItem.quantity > 0)
+                IconButton(
+                  onPressed: controller.isLoading ? null : () async {
+                    final success = await controller.addItemToCart(cartItemDetails.product.id, quantity: -1);
+                    if (!success && controller.error != null && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Failed to add item: ${controller.error}'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  icon: Icon(
+                    Icons.remove, 
+                    color: controller.isLoading ? Colors.red : Colors.grey,
                   ),
                 ),
                 Text('Qty: ${cartItemDetails.orderItem.quantity}'),
@@ -336,7 +371,7 @@ Widget _buildCartItems(CartController controller) {
           SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
+            child: ElevatedButton( //procedding to payment page
               onPressed: controller.isLoading || controller.cartItemCount == 0 ? null : () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("Proceeding to checkout...")),

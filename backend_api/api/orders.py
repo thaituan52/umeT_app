@@ -150,7 +150,7 @@ async def get_user_cart_endpoint(user_uid: str, db: Session = Depends(get_db)):
 # USING TO ADD ITEM TO CART
 @router.post("/users/{user_uid}/cart/items/")
 async def add_to_cart(
-    user_uid: int,
+    user_uid: str,
     product_id: int,
     quantity: int = 1,
     db: Session = Depends(get_db)
