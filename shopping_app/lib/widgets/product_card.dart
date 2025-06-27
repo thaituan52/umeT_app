@@ -31,7 +31,7 @@ import '../models/product.dart';
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(),
               spreadRadius: 1,
               blurRadius: 5,
               offset: Offset(0, 2),
@@ -177,6 +177,9 @@ import '../models/product.dart';
                               color: Colors.white,
                               size: 16,
                             ),
+                            // child: Text(
+                            //     'Add now'
+                            //   ),
                           ),
                         ),
                       ],
