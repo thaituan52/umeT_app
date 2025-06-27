@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shopping_app/controllers/main_screen_controller.dart';
 import 'package:shopping_app/models/user.dart';
 import 'package:shopping_app/views/cart_screen.dart';
 import 'package:shopping_app/views/home_screen.dart';
@@ -15,7 +17,6 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
 
   final List<Widget> _screen = [];
 
@@ -29,19 +30,23 @@ class _MainScreenState extends State<MainScreen> {
     ]);
   }
 
-  void _onScreenTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
+    final controller = Provider.of<MainScreenController>(context);
+    final List<Widget> pages = [
+      HomeScreen(user: widget.user),
+      CartScreen(user: widget.user!),
+      ProfileScreen(user: widget.user),
+    ];
     return Scaffold(
-      body: _screen[_selectedIndex],
+      body: IndexedStack(
+        index: controller.currentIndex,
+        children: pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onScreenTapped,
+        currentIndex: controller.currentIndex,
+        onTap: controller.setIndex,
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.grey,
         items: const [

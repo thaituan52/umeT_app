@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../controllers/cart_controller.dart';
+import '../controllers/main_screen_controller.dart';
 import '../models/user.dart';
 import 'check_out_screen.dart';
 
@@ -389,7 +390,9 @@ Widget _buildCartItems(CartController controller) {
                   _cartController.refreshCart(); // clear cart or refresh
                   ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Payment completed!')),
+                  
                 );
+                  Provider.of<MainScreenController>(context, listen: false).setIndex(0);
               }
               },
               style: ElevatedButton.styleFrom(

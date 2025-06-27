@@ -12,7 +12,7 @@ class CategoriesService {
   // Handle Google Sign-In with backend save
   static Future<List<Category>> getCategories({
     int skip = 0,
-    int limit = 10,
+    int limit = 100,
   }) async {
     try {
       final response = await http.get(
