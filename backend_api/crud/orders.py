@@ -1,17 +1,20 @@
-#CRUD for orders
+# CRUD for orders
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from ..schemas import OrderCreate, OrderUpdate
 from ..crud.products import get_product_by_id
-from ..models import Order, OrderItem
+from ..models import Order, OrderItem, ShippingAddress  # Import ShippingAddress
+from .shipping_address import get_address_by_id  # Import get_address_by_id
 
 
 def get_order_by_id(db: Session, order_id: int):
     return db.query(Order).filter(Order.id == order_id).first()
 
+
 def get_orders_by_user(db: Session, user_uid: str, skip: int = 0, limit: int = 100):
     return db.query(Order).filter(Order.user_uid == user_uid).offset(skip).limit(limit)
+
 
 def get_user_cart(db: Session, uid: str):
     return db.query(Order).filter(Order.user_uid == uid, Order.status == 1).first()
@@ -22,6 +25,7 @@ def calculate_order_total(db: Session, order_id: int):
     items = db.query(OrderItem).filter(OrderItem.order_id == order_id)
     total = sum(float(item.price_per_unit) * item.quantity for item in items)
     return total
+
 
 def _process_order_items(db: Session, order_id: int, items_data: list) -> float:
     """
@@ -39,16 +43,29 @@ def _process_order_items(db: Session, order_id: int, items_data: list) -> float:
             order_id=order_id,
             product_id=item_data['product_id'],
             quantity=item_data['quantity'],
-            price_per_unit=price_per_unit
+            price_per_unit=price_per_unit,
         )
         db.add(db_item)
         total_amount += float(price_per_unit) * item_data['quantity']
     return total_amount
 
+
 def update_order(db: Session, order_id: int, order_update: OrderUpdate):
     db_order = get_order_by_id(db, order_id)
     if not db_order:
         return None
+
+    # Validate shipping_address_id if provided
+    if order_update.shipping_address_id is not None:
+        address = get_address_by_id(db, order_update.shipping_address_id)
+        if not address:
+            raise ValueError(
+                f"Shipping address with ID {order_update.shipping_address_id} not found"
+            )
+        if address.user_uid != db_order.user_uid:
+            raise ValueError(
+                f"Shipping address with ID {order_update.shipping_address_id} does not belong to the user of this order."
+            )
 
     update_data = order_update.model_dump(exclude_unset=True)
     items_data = update_data.pop('items', None)
@@ -69,21 +86,34 @@ def update_order(db: Session, order_id: int, order_update: OrderUpdate):
     db.refresh(db_order)
     return db_order
 
-def create_order(db: Session, order: OrderCreate):
 
+def create_order(db: Session, order: OrderCreate):
     user_uid = order.user_uid
     requested_status = order.status
 
-    existing_order = db.query(Order).filter(
-        Order.user_uid == user_uid,
-        Order.status == requested_status
-    ).first()
+    # Validate shipping_address_id if provided
+    if order.shipping_address_id is not None:
+        address = get_address_by_id(db, order.shipping_address_id)
+        if not address:
+            raise ValueError(
+                f"Shipping address with ID {order.shipping_address_id} not found"
+            )
+        if address.user_uid != user_uid:
+            raise ValueError(
+                f"Shipping address with ID {order.shipping_address_id} does not belong to this user."
+            )
 
-    if(existing_order):
+    existing_order = (
+        db.query(Order)
+        .filter(Order.user_uid == user_uid, Order.status == requested_status)
+        .first()
+    )
+
+    if existing_order:
         order_update_data = order.model_dump(exclude_unset=True)
-        order_update_data['items'] = order.items # Explicitly set items from OrderCreate
+        order_update_data['items'] = order.items  # Explicitly set items from OrderCreate
         order_update_obj = OrderUpdate(**order_update_data)
-        
+
         try:
             # Call the update_order function to update the existing order
             db_order = update_order(db, existing_order.id, order_update_obj)
@@ -92,10 +122,10 @@ def create_order(db: Session, order: OrderCreate):
             # If product not found during item processing in update_order,
             # re-raise the error. update_order already handles commit/refresh.
             raise e
-    else: 
+    else:
         order_data = order.model_dump()
         items_data = order_data.pop('items', [])
-        db_order = Order(**order_data)
+        db_order = Order(**order_data)  # Create the Order object using order_data
         db.add(db_order)
         db.commit()
         db.refresh(db_order)
@@ -106,43 +136,44 @@ def create_order(db: Session, order: OrderCreate):
         db.commit()
         db.refresh(db_order)
     except ValueError as e:
-        db.rollback() # Rollback the order creation if product not found
+        db.rollback()  # Rollback the order creation if product not found
         raise e
 
     return db_order
 
 
 def add_item_to_cart(db: Session, user_uid: str, product_id: int, quantity: int):
-    #Get or create cart for user
+    # Get or create cart for user
     cart = get_user_cart(db, user_uid)
     if not cart:
-        cart = Order(user_uid=user_uid, status = 1)
+        cart = Order(user_uid=user_uid, status=1)
         db.add(cart)
         db.commit()
         db.refresh(cart)
-    
-    #Check product exist
+
+    # Check product exist
     product = get_product_by_id(db, product_id)
     if not product:
         raise ValueError(f"Product with ID {product_id} not found")
-    
-    #Check if item already exists in cart
-    existing_item = db.query(OrderItem).filter(
-        OrderItem.order_id == cart.id,
-        OrderItem.product_id == product_id
-    ).first()
 
-    if  existing_item:
+    # Check if item already exists in cart
+    existing_item = (
+        db.query(OrderItem)
+        .filter(OrderItem.order_id == cart.id, OrderItem.product_id == product_id)
+        .first()
+    )
+
+    if existing_item:
         existing_item.quantity += quantity
     else:
         new_item = OrderItem(
-            order_id = cart.id,
-            product_id = product_id,
-            quantity = quantity,
-            price_per_unit = product.price
+            order_id=cart.id,
+            product_id=product_id,
+            quantity=quantity,
+            price_per_unit=product.price,
         )
         db.add(new_item)
-    
+
     db.commit()
     total_amount = calculate_order_total(db, cart.id)
     cart.total_amount = str(total_amount)

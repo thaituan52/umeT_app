@@ -39,6 +39,27 @@ class UserResponse(UserBase):
     updated_at: Optional[datetime] = None
 
 
+class ShippingAddressBase(BaseModel):
+    address: str
+    is_default: bool = False
+
+class ShippingAddressCreate(ShippingAddressBase):
+    pass
+
+class ShippingAddressUpdate(BaseModel):
+    address: Optional[str] = None
+    is_default: Optional[bool] = None
+
+class ShippingAddressResponse(ShippingAddressBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
 
 class CategoryBase(BaseModel):
     name: str
@@ -105,13 +126,13 @@ class OrderItemResponse(OrderItemBase):
     created_at: datetime
 
     class Config:
-        from_atrributes = True
+        from_attributes = True
 
 
 class OrderBase(BaseModel):
     user_uid: Optional[str] = None
     status: Optional[int] = 1
-    shipping_address: Optional[str] = None
+    shipping_address_id: Optional[int] = None
     billing_method: Optional[str] = "Cash"
     contact_phone: Optional[str]= None
 
@@ -119,35 +140,37 @@ class OrderBase(BaseModel):
 class OrderCreate(OrderBase):
     items: List[OrderItemCreate]
 
-    @field_validator('shipping_address')
+    @field_validator('shipping_address_id')
     def validate_shipping_address(cls, v, info: ValidationInfo):
         status = info.data.get('status',1)
         if status in [2,3] and not v:
-            raise ValueError('Shipping address is required for processing and completed orders')
+            raise ValueError('Shipping address ID is required for processing and completed orders')
         return v
 
 
 class OrderUpdate(BaseModel):
     status: Optional[int] = None
-    shipping_address: Optional[str] = None
+    shipping_address_id: Optional[int] = None
     billing_method: Optional[str] = None
     contact_phone: Optional[str] = None
     items: Optional[List[OrderItemCreate]] = None
     
-    @field_validator('shipping_address')
+    @field_validator('shipping_address_id')
     def validate_shipping_address(cls, v, info: ValidationInfo):
         status = info.data.get('status')
         # If updating status to processing/completed, require shipping address
         if status in [2, 3] and not v:
-            raise ValueError('Shipping address is required when updating to processing or completed status')
+            raise ValueError('Shipping address ID is required when updating to processing or completed status')
         return v
 
-class OrderResponse(BaseModel):
+class OrderResponse(OrderBase):
     id: int
     total_amount: float
     created_at: datetime
     updated_at: datetime
-    items: List[OrderItemResponse]    
+    items: List[OrderItemResponse]
+    # This field is needed to include the nested object in the response
+    shipping_address_obj: Optional[ShippingAddressResponse] = None    
 
     class Config:
         from_attributes = True

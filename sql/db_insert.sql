@@ -1,11 +1,11 @@
 USE shopping_app;
 
 -- Insert test users to verify everything works
-INSERT IGNORE INTO user_info (uid, identifier, provider, display_name) 
-VALUES 
-    ('1234567890', '+1234567890', 'phone', 'John Doe'),
-    ('0987654321', 'jane@example.com', 'gmail', 'Gay Smith'),
-    ('8765436789', 'google.user@gmail.com', 'google', 'Mike Johnson');
+-- INSERT IGNORE INTO user_info (uid, identifier, provider, display_name) 
+-- VALUES 
+--     ('1234567890', '+1234567890', 'phone', 'John Doe'),
+--     ('0987654321', 'jane@example.com', 'gmail', 'Gay Smith'),
+--     ('8765436789', 'google.user@gmail.com', 'google', 'Mike Johnson');
     
 -- Insert sample categories
 INSERT INTO categories (name, description) VALUES

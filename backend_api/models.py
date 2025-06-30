@@ -1,6 +1,7 @@
 # ----------------------------------------
 # SQLAlchemy Models
 # ----------------------------------------
+import enum
 from sqlalchemy import ForeignKey, Text, Column, Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -21,6 +22,23 @@ class User(Base):
     last_login = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    shipping_addresses = relationship("ShippingAddress", back_populates="user")
+
+
+class ShippingAddress(Base):
+    __tablename__ = "shipping_address"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_uid = Column(String, ForeignKey("user_info.uid"), nullable=False)
+    address = Column(String, nullable = False)
+    is_default = Column(Boolean, default = True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    user = relationship("User", back_populates="shipping_addresses")
+    orders = relationship("Order", back_populates="shipping_address_obj")
+
 
 
 class Category(Base):
@@ -70,6 +88,15 @@ class ProductCategory(Base):
     category = relationship("Category", back_populates="category_products")
 
 
+# ... (your existing OrderStatus enum)
+class OrderStatus(enum.Enum):
+    deactivated = 0
+    cart = 1
+    processing = 2
+    completed = 3
+
+
+    
 class Order(Base):
     __tablename__ = "orders"
 
@@ -77,7 +104,7 @@ class Order(Base):
     user_uid = Column(Text, ForeignKey("user_info.uid"), nullable = False)
     status = Column(Integer, default = 1) #0: deactivated, 1: cart, 2: processing, 3: completed
     total_amount = Column(String(10), default = 0.0)
-    shipping_address = Column(Text, nullable = True)
+    shipping_address_id = Column(Integer, ForeignKey("shipping_address.id"))
     billing_method = Column(String(20), default = "Cash")
     contact_phone = Column(String(20), nullable = True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -86,6 +113,7 @@ class Order(Base):
 
     user = relationship("User")
     items = relationship("OrderItem", back_populates= "order")
+    shipping_address_obj = relationship("ShippingAddress", back_populates="orders")
 
 class OrderItem(Base):
     __tablename__ = "order_items"

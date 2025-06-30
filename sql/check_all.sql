@@ -6,3 +6,4 @@ USE shopping_app;
 -- SELECT * FROM product_categories;
 SELECT * FROM orders;
 SELECT * FROM order_items;
+SELECT * FROM shipping_address;

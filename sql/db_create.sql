@@ -117,3 +117,13 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS shipping_address (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_uid VARCHAR(255) NOT NULL, -- Assuming VARCHAR(255) for UID if not specified, or match User.uid length
+    address VARCHAR(255) NOT NULL,   -- Adjust length as needed for actual addresses
+    is_default BOOLEAN DEFAULT TRUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_uid) REFERENCES user_info(uid)
+);
+

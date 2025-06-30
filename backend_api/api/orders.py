@@ -1,6 +1,7 @@
 # Product endpoints
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
+from grpc import Status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -21,32 +22,13 @@ async def create_order_endpoint(order: OrderCreate, db: Session = Depends(get_db
     """Create a new order with items"""
     try:
         db_order = crud_orders.create_order(db, order)
-        
-        # Build response with items
-        items = []
-        for item in db_order.items:
-            items.append(OrderItemResponse(
-                id=item.id,
-                product_id=item.product_id,
-                quantity=item.quantity,
-                price_per_unit=float(item.price_per_unit),
-                created_at=item.created_at
-            ))
-        
-        return OrderResponse(
-            id=db_order.id,
-            user_uid=db_order.user_uid,
-            status=db_order.status,
-            total_amount=float(db_order.total_amount),
-            shipping_address=db_order.shipping_address,
-            billing_method=db_order.billing_method,
-            contact_phone=db_order.contact_phone,
-            created_at=db_order.created_at,
-            updated_at=db_order.updated_at,
-            items=items
-        )
-    except Exception as e:
+        return db_order
+    except ValueError as e:
+        # This will catch the ValueError from the CRUD function
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        # Catch other unexpected errors
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/orders/{order_id}", response_model=OrderResponse)
 async def get_order(order_id: int, db: Session = Depends(get_db)):
@@ -54,30 +36,7 @@ async def get_order(order_id: int, db: Session = Depends(get_db)):
     order = crud_orders.get_order_by_id(db, order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    
-    # Build response with items
-    items = []
-    for item in order.items:
-        items.append(OrderItemResponse(
-            id=item.id,
-            product_id=item.product_id,
-            quantity=item.quantity,
-            price_per_unit=float(item.price_per_unit),
-            created_at=item.created_at
-        ))
-    
-    return OrderResponse(
-        id=order.id,
-        user_uid=order.user_uid,
-        status=order.status,
-        total_amount=float(order.total_amount),
-        shipping_address=order.shipping_address,
-        billing_method=order.billing_method,
-        contact_phone=order.contact_phone,
-        created_at=order.created_at,
-        updated_at=order.updated_at,
-        items=items
-    )
+    return order
 
 @router.get("/users/{user_uid}/orders/", response_model=List[OrderResponse])
 async def get_user_orders(
@@ -89,32 +48,7 @@ async def get_user_orders(
     """Get all orders for a specific user"""
     orders = crud_orders.get_orders_by_user(db, user_uid, skip=skip, limit=limit)
     
-    result = []
-    for order in orders:
-        items = []
-        for item in order.items:
-            items.append(OrderItemResponse(
-                id=item.id,
-                product_id=item.product_id,
-                quantity=item.quantity,
-                price_per_unit=float(item.price_per_unit),
-                created_at=item.created_at
-            ))
-        
-        result.append(OrderResponse(
-            id=order.id,
-            user_uid=order.user_uid,
-            status=order.status,
-            total_amount=float(order.total_amount),
-            shipping_address=order.shipping_address,
-            billing_method=order.billing_method,
-            contact_phone=order.contact_phone,
-            created_at=order.created_at,
-            updated_at=order.updated_at,
-            items=items
-        ))
-    
-    return result
+    return orders
 
 @router.get("/users/{user_uid}/cart/", response_model=OrderResponse)
 async def get_user_cart_endpoint(user_uid: str, db: Session = Depends(get_db)):
@@ -123,30 +57,7 @@ async def get_user_cart_endpoint(user_uid: str, db: Session = Depends(get_db)):
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found")
     
-    # Build response with items
-    items = []
-    for item in cart.items:
-        items.append(OrderItemResponse(
-            id=item.id,
-           # order_id=cart.id, #order id if need
-            product_id=item.product_id,
-            quantity=item.quantity,
-            price_per_unit=float(item.price_per_unit),
-            created_at=item.created_at
-        ))
-    
-    return OrderResponse(
-        id=cart.id,
-        user_uid=cart.user_uid,
-        status=cart.status,
-        total_amount=float(cart.total_amount),
-        shipping_address=cart.shipping_address,
-        billing_method=cart.billing_method,
-        contact_phone=cart.contact_phone,
-        created_at=cart.created_at,
-        updated_at=cart.updated_at,
-        items=items
-    )
+    return cart
 # USING TO ADD ITEM TO CART
 @router.post("/users/{user_uid}/cart/items/")
 async def add_to_cart(
@@ -173,30 +84,7 @@ async def update_order_endpoint(
         db_order = crud_orders.update_order(db, order_id, order_update)
         if not db_order:
             raise HTTPException(status_code=404, detail="Order not found")
-        
-        # Build response with items
-        items = []
-        for item in db_order.items:
-            items.append(OrderItemResponse(
-                id=item.id,
-                product_id=item.product_id,
-                quantity=item.quantity,
-                price_per_unit=float(item.price_per_unit),
-                created_at=item.created_at
-            ))
-        
-        return OrderResponse(
-            id=db_order.id,
-            user_uid=db_order.user_uid,
-            status=db_order.status,
-            total_amount=float(db_order.total_amount),
-            shipping_address=db_order.shipping_address,
-            billing_method=db_order.billing_method,
-            contact_phone=db_order.contact_phone,
-            created_at=db_order.created_at,
-            updated_at=db_order.updated_at,
-            items=items
-        )
+        return db_order
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -215,16 +103,13 @@ async def update_order_status(
         raise HTTPException(status_code=400, detail="Invalid status. Must be 0, 1, 2, or 3")
     
     # Validate shipping address for processing/completed orders
-    if status in [2, 3] and not order.shipping_address:
+    if status in [2, 3] and not order.shipping_address_id:
         raise HTTPException(
             status_code=400, 
             detail="Shipping address is required before moving order to processing or completed status"
         )
     
-    order.status = status
-    order.updated_at = datetime.utcnow()
-    db.commit()
-    
+    updated_order = crud_orders.update_order(db, order_id, OrderUpdate(status=status))
     return {"message": "Order status updated", "order_id": order_id, "new_status": status}
 
 @router.delete("/orders/{order_id}")
@@ -235,7 +120,7 @@ async def delete_order(order_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Order not found")
     
     order.status = 0  # Deactivated
-    order.updated_at = datetime.utcnow()
+    order.updated_at = datetime.now(timezone.utc)
     db.commit()
     
     return {"message": "Order deleted successfully"}
@@ -280,29 +165,4 @@ async def get_all_orders(
     
     orders = query.offset(skip).limit(limit).all()
     
-    result = []
-    for order in orders:
-        items = []
-        for item in order.items:
-            items.append({
-                "id": item.id,
-                "product_id": item.product_id,
-                "quantity": item.quantity,
-                "price_per_unit": float(item.price_per_unit),
-                "created_at": item.created_at
-            })
-        
-        result.append({
-            "id": order.id,
-            "user_uid": order.user_uid,
-            "status": order.status,
-            "total_amount": float(order.total_amount),
-            "shipping_address": order.shipping_address,
-            "billing_method": order.billing_method,
-            "contact_phone": order.contact_phone,
-            "created_at": order.created_at,
-            "updated_at": order.updated_at,
-            "items": items
-        })
-    
-    return result
+    return orders
