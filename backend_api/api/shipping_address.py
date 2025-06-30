@@ -20,6 +20,8 @@ async def create_address_for_user(
     db: Session = Depends(get_db)
     ):
     db_address = crud_addresses.create_shipping_address(db, address, user_uid) # Use model_dump() for Pydantic V2
+    if db_address is None:
+        raise HTTPException(status_code=404, detail="Duplicate address")
     return db_address
 
 @router.get("/", response_model=List[ShippingAddressResponse])

@@ -52,7 +52,7 @@ class ShippingAddressUpdate(BaseModel):
 
 class ShippingAddressResponse(ShippingAddressBase):
     id: int
-    user_id: int
+    user_uid: str
     created_at: datetime
     updated_at: Optional[datetime] = None
 

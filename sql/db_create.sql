@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS orders (
     user_uid VARCHAR(500),
     status INT DEFAULT 1,  -- 0: deactivated, 1: cart, 2: processing, 3: completed
     total_amount DECIMAL(10, 2) DEFAULT 0.0,
-    shipping_address TEXT,
+    shipping_address_id INT,
     billing_method VARCHAR(500),
     contact_phone VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

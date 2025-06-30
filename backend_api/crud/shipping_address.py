@@ -14,6 +14,12 @@ def get_addresses_by_user(db: Session, user_uid: str):
     return db.query(ShippingAddress).filter(ShippingAddress.user_uid == user_uid).all()
 
 def create_shipping_address(db: Session, address: ShippingAddressCreate, user_uid: str):
+    exist = db.query(ShippingAddress).filter(
+        ShippingAddress.user_uid == user_uid,
+        ShippingAddress.address == address.address).first()
+    
+    if exist:
+        return None 
     if address.is_default: #if it is a new default, make the current default off
         db.query(ShippingAddress).filter(
             ShippingAddress.user_uid == user_uid,
@@ -44,12 +50,12 @@ def update_shipping_address(db: Session, address_id: int, address_update: Shippi
             ShippingAddress.id != address_id
         ).update({"is_default": False})
 
-    for key, value in update_data.items:
+    for key, value in update_data.items():
         setattr(db_address, key, value)
     
     db.commit()
     db.refresh(db_address)
-    return db.address
+    return db_address
 
 def delete_shipping_address(db: Session, address_id: int):
     db_address = db.query(ShippingAddress).filter(ShippingAddress.id == address_id).first()
