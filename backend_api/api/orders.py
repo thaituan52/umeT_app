@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from ..models import Order, OrderItem
 
-from ..schemas import OrderCreate, OrderItemResponse, OrderResponse, OrderUpdate, ProductCreate, ProductResponse, ProductUpdate, UserResponse # Relative import
+from ..schemas import OrderCreate,OrderResponse, OrderUpdate
 from ..crud import orders as crud_orders # Import crud functions
 from ..database import get_db # Import DB dependency
 
