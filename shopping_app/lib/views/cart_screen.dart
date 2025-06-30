@@ -70,7 +70,7 @@ class _CartScreenState extends State<CartScreen> {
               return _buildErrorState(controller);
             }
 
-            if (controller.cartItemCount == 0) {
+            if (controller.totalCartQuantity == 0) {
               return _buildEmptyCart(canPop);
             }
 
@@ -353,7 +353,7 @@ Widget _buildCartItems(CartController controller) {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Total (${controller.cartItemCount} items):',
+                'Total (${controller.totalCartQuantity} items):',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,

@@ -53,6 +53,7 @@ class HomeController {
     onStateUpdate();
   }
 
+
   Future<void> loadCart() async {
     if (user == null) {
       _cartItemCount = 0;
@@ -67,7 +68,11 @@ class HomeController {
       // Use the instance method instead of static access
       final cart = await _cartService.getUserCart(user!.uid);
       final List<OrderItem> orderItems = cart?.items ?? [];
-      _cartItemCount = orderItems.length;
+      int total = 0;
+      for (final orderItem in orderItems) {
+        total += orderItem.quantity;
+      }
+      _cartItemCount = total;
     } catch (e) {
       print('Error loading cart: $e');
       _cartItemCount = 0;

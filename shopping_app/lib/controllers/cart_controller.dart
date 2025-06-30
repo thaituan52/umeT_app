@@ -36,7 +36,14 @@ class CartController extends ChangeNotifier {
   List<CartItemDetails> get cartItemsWithDetails => _cartItemsWithDetails;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  int get cartItemCount => _cartItemsWithDetails.length;
+  // Returns the total quantity of all items in the cart
+  int get totalCartQuantity {
+    int total = 0;
+    for (final item in _cartItemsWithDetails) {
+      total += item.orderItem.quantity;
+    }
+    return total;
+  } 
   double get totalAmount => _cart?.totalAmount ?? 0.0;
 
   //Load user's cart
