@@ -24,18 +24,8 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  int selectedColorIndex = 0;
   int quantity = 1;
   
-  List<Color> availableColors = [
-    Colors.grey[300]!,
-    Colors.blue[900]!,
-    Colors.pink[200]!,
-    Colors.brown[400]!,
-    Colors.grey[600]!,
-    Colors.green[300]!,
-  ];
-
   String? _getImageUrl() {
     if (widget.product.imageURL != null && widget.product.imageURL!.isNotEmpty) {
       return widget.product.imageURL;
@@ -142,32 +132,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   widget.product.name,
                   style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                   textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(availableColors.length, (index) {
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedColorIndex = index;
-                        });
-                      },
-                      child: Container(
-                        margin: EdgeInsets.symmetric(horizontal: 4),
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: availableColors[index],
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: selectedColorIndex == index ? Colors.black : Colors.transparent,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
                 ),
                 SizedBox(height: 16),
                 Row(
