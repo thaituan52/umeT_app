@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shopping_app/controllers/home_controller.dart';
 import 'package:shopping_app/models/product.dart';
 import 'package:shopping_app/models/user.dart';
 import 'package:shopping_app/views/cart_screen.dart';
@@ -6,17 +7,13 @@ import 'package:shopping_app/views/cart_screen.dart';
 class ProductDetailScreen extends StatefulWidget {
   final UserModel user;
   final Product product;
-  final VoidCallback onAddToCart;
-  final VoidCallback onBuyNow;
-  final int cartItemCount; // Add this parameter
+  final HomeController controller;
 
   const ProductDetailScreen({
     super.key,
     required this.user,
     required this.product,
-    required this.onAddToCart,
-    required this.onBuyNow,
-    required this.cartItemCount, // Add this required parameter
+    required this.controller,
   });
   
   @override
@@ -163,12 +160,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton.icon(
-                      onPressed: widget.onAddToCart,
+                      onPressed: () {
+                        widget.controller.addToCart(widget.product.id, quantity: quantity);
+                      },
                       icon: Icon(Icons.shopping_cart),
                       label: Text('Add to Cart'),
                     ),
                     ElevatedButton.icon(
-                      onPressed: widget.onBuyNow,
+                      onPressed: () {
+                        _navigateToCart();
+                      },
                       icon: Icon(Icons.payment),
                       label: Text('Buy Now'),
                       style: ElevatedButton.styleFrom(
@@ -226,7 +227,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               size: 24,
             ),
           ),
-          if (widget.cartItemCount > 0) // Use widget.cartItemCount here
+          if (widget.controller.cartItemCount > 0) // Use widget.cartItemCount here
             Positioned(
               right: 8,
               top: 8,
@@ -241,7 +242,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   minHeight: 20,
                 ),
                 child: Text(
-                  '${widget.cartItemCount}', // Use widget.cartItemCount here
+                  '${widget.controller.cartItemCount}', // Use widget.cartItemCount here
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 12,

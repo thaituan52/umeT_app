@@ -41,39 +41,38 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _buildSearchBar(),
           _buildCategoryTabs(),
-          Expanded(
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onHorizontalDragEnd: (details) {
-                  _controller.handleHorizontalDrag(details);
-                },
-                child: Container(
-                  width: double.infinity,
-                        constraints: BoxConstraints(
-                          minHeight: MediaQuery.of(context).size.height,
-                        ),
-                  child: ProductGridWidget(
-                    categoryId: _controller.selectedCategoryIndex,
-                    searchQuery: _controller.searchQuery,
-                    user: widget.user,
-                    cartItemCount: _controller.cartItemCount,
-                    onAddToCartExternal: (product) {
-                      _controller.addToCart(product.id);
-                    },
-                  ),
-                ),
-              ),
-                ),
-              ],
-              
-            ),
-          ),
+          _buildProduct(context),
         ],
       ),
     );
+  }
+
+  Widget _buildProduct(BuildContext context) {
+    return Expanded(
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onHorizontalDragEnd: (details) {
+                _controller.handleHorizontalDrag(details);
+              },
+              child: Container(
+                width: double.infinity,
+                      constraints: BoxConstraints(
+                        minHeight: MediaQuery.of(context).size.height,
+                      ),
+                child: ProductGridWidget(
+                  user: widget.user,
+                  controller: _controller, // add controller here?
+                ),
+              ),
+            ),
+              ),
+            ],
+            
+          ),
+        );
   }
 
   Widget _buildSearchBar() {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shopping_app/controllers/home_controller.dart';
 import './product_card.dart';
 import '../models/user.dart';
 import '../models/product.dart';
@@ -6,29 +7,22 @@ import '../service/product_service.dart';
 import '../views/product_detail_screen.dart';
 
   class ProductGridWidget extends StatelessWidget {
-    final int? categoryId;
-    final String searchQuery;
     final UserModel? user;
-    final int cartItemCount;
-    final Function(Product)? onAddToCartExternal;
-    final Function(Product)? onBuyNowExternal;
+    final HomeController controller;
+
 
     const ProductGridWidget({
       super.key,
-      required this.categoryId,
-      required this.searchQuery,
       required this.user,
-      required this.cartItemCount,
-      this.onAddToCartExternal,
-      this.onBuyNowExternal,
+      required this.controller,
     });
 
     @override
     Widget build(BuildContext context) {
       return FutureBuilder<List<Product>>(
     future: ProductService.getProducts(
-      categoryId: categoryId == 0 ? null : categoryId,
-      query: searchQuery == "search" ? '' : searchQuery,
+      categoryId: controller.selectedCategoryIndex == 0 ? null : controller.selectedCategoryIndex,
+      query: controller.searchQuery == "search" ? '' : controller.searchQuery,
     ),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -62,24 +56,12 @@ import '../views/product_detail_screen.dart';
                     builder: (context) => ProductDetailScreen(
                       product: product,
                       user: user!,
-                      cartItemCount: cartItemCount, // Pass the cart count here
-                      onAddToCart: () {
-                        onAddToCartExternal?.call(product);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Added to cart")),
-                        );
-                      },
-                      onBuyNow: () {
-                        onBuyNowExternal?.call(product);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Proceeding to checkout...")),
-                        );
-                      },
+                      controller: controller,
                     ),
                   ),
                 ),
                 onAddToCart: () {
-                  onAddToCartExternal?.call(product);
+                  controller.addToCart(product.id);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text("Added to cart!"),

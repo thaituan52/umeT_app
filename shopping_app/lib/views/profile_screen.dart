@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shopping_app/views/login_screen.dart';
 import 'package:shopping_app/models/user.dart';
 
+import '../controllers/home_controller.dart';
 import '../widgets/product_grid.dart'; // Import the new product file
 
 class ProfileScreen extends StatefulWidget {
@@ -16,8 +17,19 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  int _cartItemCount = 0; // take from cart ? or db
-  //List<Category> _categories = [Category(id: 0, name: "All", isActive: true)];
+  late final HomeController _homeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _homeController = HomeController(
+      user: widget.user,
+      onStateUpdate: () {
+        setState(() {});
+      },
+    );
+    _homeController.loadCategories();
+  }
 
   // Google Sign-out method
   Future<bool> signOutFromGoogle() async {
@@ -84,15 +96,8 @@ Widget _buildMainContent() {
               SliverToBoxAdapter(child: _buildSearchBar()),
               SliverToBoxAdapter(
                 child: ProductGridWidget(
-                        categoryId: 0,
-                        searchQuery: '',
                         user: widget.user,
-                        cartItemCount: _cartItemCount,
-                        onAddToCartExternal: (product) {
-                          setState(() {
-                          _cartItemCount++;
-                          });
-                        },
+                        controller: _homeController,
                 ), 
               ),
             ],
