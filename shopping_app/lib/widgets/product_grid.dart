@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_app/controllers/home_controller.dart';
+import '../controllers/cart_controller.dart';
 import './product_card.dart';
 import '../models/user.dart';
 import '../models/product.dart';
@@ -8,21 +9,23 @@ import '../views/product_detail_screen.dart';
 
   class ProductGridWidget extends StatelessWidget {
     final UserModel? user;
-    final HomeController controller;
+    final HomeController homeController;
+    final CartController cartController;
 
 
     const ProductGridWidget({
       super.key,
       required this.user,
-      required this.controller,
+      required this.homeController,
+      required this.cartController,
     });
 
     @override
     Widget build(BuildContext context) {
       return FutureBuilder<List<Product>>(
     future: ProductService.getProducts(
-      categoryId: controller.selectedCategoryIndex == 0 ? null : controller.selectedCategoryIndex,
-      query: controller.searchQuery == "search" ? '' : controller.searchQuery,
+      categoryId: homeController.selectedCategoryIndex == 0 ? null : homeController.selectedCategoryIndex,
+      query: homeController.searchQuery == "search" ? '' : homeController.searchQuery,
     ),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -55,13 +58,11 @@ import '../views/product_detail_screen.dart';
                   MaterialPageRoute(
                     builder: (context) => ProductDetailScreen(
                       product: product,
-                      user: user!,
-                      controller: controller,
                     ),
                   ),
                 ),
                 onAddToCart: () {
-                  controller.addToCart(product.id);
+                  cartController.addItemToCart(product.id);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text("Added to cart!"),

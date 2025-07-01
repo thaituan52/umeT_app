@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:shopping_app/controllers/home_controller.dart';
-import 'package:shopping_app/models/product.dart';
-import 'package:shopping_app/models/user.dart';
-import 'package:shopping_app/views/cart_screen.dart';
+import 'package:provider/provider.dart';
+
+import '../models/product.dart';
+import '../views/cart_screen.dart';
+import '../controllers/cart_controller.dart';
+import '../controllers/home_controller.dart'; // <--- Import HomeController
 
 class ProductDetailScreen extends StatefulWidget {
-  final UserModel user;
   final Product product;
-  final HomeController controller;
 
   const ProductDetailScreen({
     super.key,
-    required this.user,
     required this.product,
-    required this.controller,
   });
   
   @override
@@ -22,26 +20,28 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int quantity = 1;
-  
-  String? _getImageUrl() {
-    if (widget.product.imageURL != null && widget.product.imageURL!.isNotEmpty) {
-      return widget.product.imageURL;
-    }
-    return widget.user.photoURL;
-  }
 
   @override
   Widget build(BuildContext context) {
+    //Retrieve the controllers using Provider
+    final cartController = Provider.of<CartController>(context);
+    final homeController = Provider.of<HomeController>(context);
+    final user = homeController.user;
+
+    String? imageUrl = (widget.product.imageURL != null && widget.product.imageURL!.isNotEmpty)
+        ? widget.product.imageURL
+        : user?.photoURL;
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
+        title: const Text(
           'umeT',
           style: TextStyle(
             color: Colors.orange,
@@ -52,7 +52,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.search, color: Colors.white),
+            icon: const Icon(Icons.search, color: Colors.white),
             onPressed: () {},
           ),
         ],
@@ -68,9 +68,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                   ),
-                  child: _getImageUrl() != null
+                  child: imageUrl != null
                       ? Image.network(
-                          _getImageUrl()!,
+                          imageUrl,
                           height: 300,
                           width: double.infinity,
                           fit: BoxFit.cover,
@@ -114,28 +114,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                         ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
                   widget.product.name,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   '\$${widget.product.price.toStringAsFixed(2)}',
-                  style: TextStyle(fontSize: 20, color: Colors.green),
+                  style: const TextStyle(fontSize: 20, color: Colors.green),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
-                  widget.product.name,
+                  widget.product.description ?? 'No description available',
                   style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.remove_circle_outline),
+                      icon: const Icon(Icons.remove_circle_outline),
                       onPressed: () {
                         if (quantity > 1) {
                           setState(() {
@@ -144,9 +144,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         }
                       },
                     ),
-                    Text(quantity.toString(), style: TextStyle(fontSize: 20)),
+                    Text(quantity.toString(), style: const TextStyle(fontSize: 20)),
                     IconButton(
-                      icon: Icon(Icons.add_circle_outline),
+                      icon: const Icon(Icons.add_circle_outline),
                       onPressed: () {
                         setState(() {
                           quantity++;
@@ -155,23 +155,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton.icon(
                       onPressed: () {
-                        widget.controller.addToCart(widget.product.id, quantity: quantity);
+                        cartController.addItemToCart(widget.product.id, quantity: quantity);
                       },
-                      icon: Icon(Icons.shopping_cart),
-                      label: Text('Add to Cart'),
+                      icon: const Icon(Icons.shopping_cart),
+                      label: const Text('Add to Cart'),
                     ),
                     ElevatedButton.icon(
-                      onPressed: () {
-                        _navigateToCart();
+                      onPressed: () async {
+                        // Add to cart first, then navigate
+                        await cartController.addItemToCart(widget.product.id, quantity: quantity);
+                        _navigateToCart(context);
                       },
-                      icon: Icon(Icons.payment),
-                      label: Text('Buy Now'),
+                      icon: const Icon(Icons.payment),
+                      label: const Text('Buy Now'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                       ),
@@ -184,84 +186,92 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           Positioned(
             right: 16,
             top: MediaQuery.of(context).size.height * 0.4,
-            child: _buildFloatingCartButton(),
+            child: _buildFloatingCartButton(context), // <--- Pass context
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFloatingCartButton() {
+  // <--- CHANGE: Pass context to the method
+  Widget _buildFloatingCartButton(BuildContext context) {
     return Draggable(
-      feedback: _buildCartIcon(isDragging: true),
+      feedback: _buildCartIcon(context, isDragging: true), // <--- Pass context
       childWhenDragging: Container(),
       onDragEnd: (details) {},
       child: GestureDetector(
-        onTap: _navigateToCart,
-        child: _buildCartIcon(),
+        onTap: () => _navigateToCart(context), // <--- Pass context
+        child: _buildCartIcon(context), // <--- Pass context
       ),
     );
   }
 
-  Widget _buildCartIcon({bool isDragging = false}) {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: Colors.green,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDragging ? 0.5 : 0.2),
-            blurRadius: 8,
-            offset: Offset(0, 4),
+  //Pass context to the method
+  Widget _buildCartIcon(BuildContext context, {bool isDragging = false}) {
+    //Use a Consumer to listen for changes in the CartController
+    return Consumer<CartController>(
+      builder: (context, cartController, child) {
+        return Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: Colors.green,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDragging ? 0.5 : 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Center(
-            child: Icon(
-              Icons.shopping_cart,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          if (widget.controller.cartItemCount > 0) // Use widget.cartItemCount here
-            Positioned(
-              right: 8,
-              top: 8,
-              child: Container(
-                padding: EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.orange,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                constraints: BoxConstraints(
-                  minWidth: 20,
-                  minHeight: 20,
-                ),
-                child: Text(
-                  '${widget.controller.cartItemCount}', // Use widget.cartItemCount here
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
+          child: Stack(
+            children: [
+              const Center(
+                child: Icon(
+                  Icons.shopping_cart,
+                  color: Colors.white,
+                  size: 24,
                 ),
               ),
-            ),
-        ],
-      ),
+              if (cartController.totalCartQuantity > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 20,
+                      minHeight: 20,
+                    ),
+                    child: Text(
+                      '${cartController.totalCartQuantity}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  void _navigateToCart() {
+  //Pass context to the method
+  void _navigateToCart(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CartScreen(user: widget.user), // Use widget.cartItemCount
+        builder: (context) => const CartScreen(),
       ),
     );
   }

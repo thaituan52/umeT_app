@@ -1,41 +1,34 @@
-
 import 'package:flutter/material.dart';
 import 'package:shopping_app/service/product_service.dart';
+import '../models/cart_item_detail.dart';
 import '../models/order.dart';
 import '../models/order_item.dart';
 import '../models/product.dart';
 import '../models/user.dart';
 import '../service/cart_service.dart';
 
-
-// Combined model for displaying cart items
-class CartItemDetails {
-  final OrderItem orderItem;
-  final Product product;
-
-  CartItemDetails({required this.orderItem, required this.product});
-}
-
-
 class CartController extends ChangeNotifier {
-  final CartService _cartService = CartService();
-  //final ProductService _productService = ProductService();
+  final CartService _cartService;
+  
+  UserModel? user; // This will be set by the LoginCheck widget.
 
   Order? _cart;
-
   bool _isLoading = false;
   String? _error;
-  String _userUid;
+  
   List<CartItemDetails> _cartItemsWithDetails = [];
 
-  CartController({required UserModel user}) : _userUid = user.uid; 
-  //I am still get some trouble with the usermodel dont have the id so now just working on a specific user
+  CartController({
+    required CartService cartService,
+  }) : _cartService = cartService;
+
 
   // Getters
   Order? get cart => _cart;
   List<CartItemDetails> get cartItemsWithDetails => _cartItemsWithDetails;
   bool get isLoading => _isLoading;
   String? get error => _error;
+
   // Returns the total quantity of all items in the cart
   int get totalCartQuantity {
     int total = 0;
@@ -44,20 +37,29 @@ class CartController extends ChangeNotifier {
     }
     return total;
   } 
+
   double get totalAmount => _cart?.totalAmount ?? 0.0;
 
-  //Load user's cart
+
+  // Load user's cart
   Future<void> loadCart() async {
+    // <--- CHANGE: Add a check for the user. --->
+    if (user == null) {
+      debugPrint('loadCart called but user is null. Aborting.');
+      return; // Abort if there's no user to load a cart for.
+    }
+    
     _setLoading(true);
     _error = null;
 
     try {
-      _cart = await _cartService.getUserCart(_userUid);
+      // <--- CHANGE: Use the public 'user' property. --->
+      _cart = await _cartService.getUserCart(user!.uid);
       final List<OrderItem> orderItems = _cart?.items ?? [];
 
       final List<Future<CartItemDetails?>> futures = orderItems.map((item) async {
-        final Product product = await ProductService.getProductById(item.productId); // Product ID is int here
-        return CartItemDetails(orderItem: item, product: product); // Product not found for this order item
+        final Product product = await ProductService.getProductById(item.productId);
+        return CartItemDetails(orderItem: item, product: product);
       }).toList();
 
       final List<CartItemDetails?> results = await Future.wait(futures);
@@ -74,8 +76,15 @@ class CartController extends ChangeNotifier {
     int productId, 
     {int quantity = 1
     }) async {
+      // <--- CHANGE: Add a check for the user. --->
+      if (user == null) {
+        _error = 'Cannot add to cart: User is not authenticated.';
+        notifyListeners();
+        return false;
+      }
+
       try {
-        final success = await _cartService.addItemToCart(_userUid, productId, quantity: quantity);
+        final success = await _cartService.addItemToCart(user!.uid, productId, quantity: quantity);
         if (success) {
           await loadCart();
           return true;
@@ -86,20 +95,22 @@ class CartController extends ChangeNotifier {
         notifyListeners();
         return false;
       }
-
     }
 
   // Remove item from cart
   Future<bool> removeItem(int itemId) async {
+    // <--- CHANGE: Add a check for the user. --->
+    if (user == null) {
+      _error = 'Cannot remove from cart: User is not authenticated.';
+      notifyListeners();
+      return false;
+    }
+
     try {
       final success = await _cartService.removeOrderItem(itemId);
       if (success) {
-        // Remove item from local list immediately for better UX
         _cartItemsWithDetails.removeWhere((cartItem) => cartItem.orderItem.id == itemId);
-        
         notifyListeners();
-        
-        // Reload cart to sync with server
         await loadCart();
         return true;
       }
@@ -116,73 +127,14 @@ class CartController extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+  
   // Refresh cart data
   Future<void> refreshCart() async {
     await loadCart();
   }
 
-
   void _setLoading(bool loading) {
-  _isLoading = loading;
-  notifyListeners();
-  }
-
-
-  String? getImageUrl(CartItemDetails cartItemDetails) {
-    final product = cartItemDetails.product;
-    if (product.imageURL != null && product.imageURL!.isNotEmpty) {
-      return product.imageURL;
-    }
-    return null;
-  }
-  Widget productIcon(CartItemDetails cartItemDetails) {
-    final imageUrl = getImageUrl(cartItemDetails);
-    return Center(
-      child: imageUrl != null
-          ? Image.network(
-              imageUrl,
-              height: 300,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 300,
-                  width: double.infinity,
-                  color: Colors.grey[300],
-                  child: const Icon(
-                    Icons.image_not_supported,
-                    size: 80,
-                    color: Colors.grey,
-                  ),
-                );
-              },
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  height: 300,
-                  width: double.infinity,
-                  color: Colors.grey[300],
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
-                    ),
-                  ),
-                );
-              },
-            )
-          : Container(
-              height: 300,
-              width: double.infinity,
-              color: Colors.grey[300],
-              child: const Icon(
-                Icons.image,
-                size: 80,
-                color: Colors.grey,
-              ),
-            ),
-    );
+    _isLoading = loading;
+    notifyListeners();
   }
 }

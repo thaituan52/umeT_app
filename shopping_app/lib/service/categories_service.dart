@@ -10,7 +10,7 @@ import '../utils/constants.dart';
 class CategoriesService {
 
   // Handle Google Sign-In with backend save
-  static Future<List<Category>> getCategories({
+  Future<List<Category>> getCategories({
     int skip = 0,
     int limit = 10,
   }) async {
@@ -33,7 +33,7 @@ class CategoriesService {
     }
   }
 
-  static Future<Category> getCategoryByID(int categoryId) async {
+  Future<Category> getCategoryByID(int categoryId) async {
     try {
       final response = await http.get(
         Uri.parse('$apiBaseUrl/categories/$categoryId'),
@@ -53,7 +53,7 @@ class CategoriesService {
     }
   }
     //havent used
-    static Future<Category> createCategory({
+    Future<Category> createCategory({
       required String name,
       String? description,
       bool isActive = true,

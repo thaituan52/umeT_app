@@ -1,141 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shopping_app/widgets/login_button.dart';
-import 'package:shopping_app/models/user.dart'; // Import the login screen
-import 'package:shopping_app/views/main_screen.dart';
-import 'package:shopping_app/service/user_service.dart'; // Import the UserModel
+import 'package:shopping_app/controllers/login_controller.dart'; 
 
-class LoginScreen extends StatefulWidget {
+
+class LoginScreen extends StatelessWidget { 
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  String? _selectedMethod;
-  bool _isLoading = false; // Used to check if the sign-in is loading or not
-  
-  Future<void> _onMethodSelected(String? method) async {
-    setState(() {
-      _selectedMethod = method;
-      _isLoading = true;
-    });
-    print('Selected method: $method');
-
-    try {
-      UserModel? userModel;
-      switch (method) {
-        case 'Apple':
-          // Handle Apple sign-in
-          print('Apple sign-in selected');
-          break;
-        case 'Google':
-          // Handle Google sign-in
-          userModel = await AuthService.handleGoogleSignIn();
-          // Implement Google Sign-In logic here
-          break;
-        case 'Facebook':
-          // Handle Facebook sign-in
-          print('Facebook sign-in selected');
-          break;
-        case 'Email':
-          // Handle Email sign-in
-          print('Email sign-in selected');
-          break;
-        case 'Phone':
-          // Handle Phone sign-in
-          print('Phone sign-in selected');
-          break;
-        default:
-          print('Unknown method selected');
-      }
-
-      if (userModel != null && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MainScreen(user: userModel),
-          ),
-        );
-        return; // Exit the method after navigation
-      }
-    } catch (e) {
-      _showMessage('Error handling $method sign-in: $e');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false; // Reset loading state after handling the method
-        });
-      }
-    }
-    //Should make a way to log in via the selected method
-  }
-
-
-
-  Future<UserModel?> _handleFacebookSignIn() async {
-    return null;
-  }
-
-  
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 158, 129, 163),
-        toolbarHeight: 80,
-        leading: IconButton(
-          icon: Icon(Icons.close),
-          onPressed: () {
-            //Navigator.pop(context);
-            print('Quit button pressed');
-          },
-        ),
-        title: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              child: Text('umeT', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.orange,)),
+    // Use a Consumer to access the LoginController and rebuild the UI when its state changes.
+    return Consumer<LoginController>(
+      builder: (context, controller, child) {
+        //Display a SnackBar for errors from the controller ---
+        //We use a post-frame callback to avoid errors from calling setState during build.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (controller.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(controller.errorMessage!),
+                duration: const Duration(seconds: 3),
+                action: SnackBarAction(
+                  label: 'Dismiss',
+                  onPressed: controller.clearError, // Call controller method to clear the error
+                ),
               ),
-            Row(
+            );
+          }
+        });
+
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: const Color.fromARGB(255, 158, 129, 163),
+            toolbarHeight: 80,
+            leading: IconButton(
+              icon: Icon(Icons.close),
+              onPressed: () {
+                // If this screen is pushed as a route, you can pop it.
+                // Navigator.pop(context);
+                debugPrint('Quit button pressed');
+              },
+            ),
+            title: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.lock, color: Colors.green),
-                SizedBox(width: 8),
-                Text('All data is not encrypted!?', style: TextStyle(color: Colors.green, fontSize: 12)),
+                const SizedBox(
+                  child: Text('umeT', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.orange)),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.lock, color: Colors.green),
+                    SizedBox(width: 8),
+                    Text('All data is not encrypted!?', style: TextStyle(color: Colors.green, fontSize: 12)),
+                  ],
+                ),
               ],
             ),
-            ], 
+            actions: [
+              IconButton(
+                icon: Icon(Icons.settings),
+                onPressed: () {
+                  debugPrint('Settings button pressed');
+                },
+              ),
+            ],
           ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              // Navigate to settings page
-              print('Settings button pressed');
-            },
+          body: Column(
+            children: [
+              // Pass the controller's state and methods to your UI widgets
+              _buildLoginButtons(context, controller),
+              SizedBox(height: 20),
+              _buildFooter(),
+            ],
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          loginWay(),
-          SizedBox(height: 20), // Add some space between the buttons and the footer
-          _buildFooter(), //Gonna change later (vibe coding)
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Container loginWay() {
+  // Refactored method to build the buttons using the controller
+  Container _buildLoginButtons(BuildContext context, LoginController controller) {
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -144,62 +89,52 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           LoginButton(
             method: 'Apple',
-            selectedMethod: _selectedMethod,
-            onMethodSelected: _onMethodSelected,
+            selectedMethod: controller.selectedMethod,
+            onMethodSelected: (method) => controller.handleSignIn(method!), 
             icon: Icons.apple,
             iconColor: Colors.white,
-            isLoading: _isLoading && _selectedMethod == 'Apple'
+            isLoading: controller.isLoading && controller.selectedMethod == 'Apple',
           ),
-
           SizedBox(height: 16.0),
-          
           LoginButton(
             method: 'Google',
-            selectedMethod: _selectedMethod,
-            onMethodSelected: _onMethodSelected,
+            selectedMethod: controller.selectedMethod,
+            onMethodSelected: (method) => controller.handleSignIn(method!), 
             icon: Icons.g_mobiledata,
-            iconColor: Colors.accents[3], // Use a color from the accent palette
-            isLoading: _isLoading && _selectedMethod == 'Google', // Show loading state for Google sign-in
+            iconColor: Colors.accents[3],
+            isLoading: controller.isLoading && controller.selectedMethod == 'Google',
           ),
-
           SizedBox(height: 16.0),
-
           LoginButton(
             method: 'Facebook',
-            selectedMethod: _selectedMethod,
-            onMethodSelected: _onMethodSelected,
+            selectedMethod: controller.selectedMethod,
+            onMethodSelected: (method) => controller.handleSignIn(method!), 
             icon: Icons.facebook,
             iconColor: Colors.blue,
-            isLoading: _isLoading && _selectedMethod == 'Facebook', // Show loading state for Facebook sign-in
+            isLoading: controller.isLoading && controller.selectedMethod == 'Facebook',
           ),
-
           SizedBox(height: 16.0),
-
           LoginButton(
             method: 'Email',
-            selectedMethod: _selectedMethod,
-            onMethodSelected: _onMethodSelected,
+            selectedMethod: controller.selectedMethod,
+            onMethodSelected: (method) => controller.handleSignIn(method!), 
             icon: Icons.email,
             iconColor: Colors.red,
-            isLoading: _isLoading && _selectedMethod == 'Email', // Show loading state for Email sign-in
+            isLoading: controller.isLoading && controller.selectedMethod == 'Email',
           ),
-
           SizedBox(height: 16.0),
-
           LoginButton(
             method: 'Phone',
-            selectedMethod: _selectedMethod,
-            onMethodSelected: _onMethodSelected,
+            selectedMethod: controller.selectedMethod,
+            onMethodSelected: (method) => controller.handleSignIn(method!), 
             icon: Icons.phone,
             iconColor: Colors.green,
-            isLoading: _isLoading && _selectedMethod == 'Phone', // Show loading state for Phone sign-in
+            isLoading: controller.isLoading && controller.selectedMethod == 'Phone',
           ),
-
           SizedBox(height: 24),
-          
-          TextButton( //temporary button to make it look similar to the original design, gonna add logic later
+          TextButton(
             onPressed: () {
-              print('Trouble signing in clicked');
+              debugPrint('Trouble signing in clicked');
             },
             child: Text(
               'Trouble signing in?',
@@ -211,9 +146,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ],
       ),
-  );
+    );
   }
-}
 
   Widget _buildFooter() {
     return Container(
@@ -248,16 +182,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
           ),
-          // SizedBox(height: 16),
-          // Container(
-          //   width: 134,
-          //   height: 5,
-          //   decoration: BoxDecoration(
-          //     color: Colors.black,
-          //     borderRadius: BorderRadius.circular(2.5),
-          //   ),
-          // ),
         ],
       ),
     );
   }
+}

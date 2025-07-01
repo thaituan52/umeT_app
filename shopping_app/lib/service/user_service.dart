@@ -6,12 +6,10 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shopping_app/models/user.dart';
 import '../utils/constants.dart';
 
-//need postAPI to check the api need
-
 class AuthService {
 
   // Handle Google Sign-In with backend save
-  static Future<UserModel?> handleGoogleSignIn() async {
+  Future<UserModel?> handleGoogleSignIn() async {
     try {
       final GoogleSignInAccount? googleAccount = await GoogleSignIn().signIn();
       if (googleAccount == null) return null;
@@ -44,7 +42,7 @@ class AuthService {
   }
 
   // Save user to your FastAPI backend
-  static Future<void> _saveUserToBackend(UserModel user) async {
+  Future<void> _saveUserToBackend(UserModel user) async {
     try {
       final payload = {
         "uid": user.uid,
