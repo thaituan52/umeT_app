@@ -2,12 +2,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shopping_app/models/category.dart';
+import '../utils/constants.dart';
 
 
 //need postAPI to check the api need
 
 class CategoriesService {
-  static const String _apiBaseUrl = 'http://10.0.2.2:8000'; 
 
   // Handle Google Sign-In with backend save
   static Future<List<Category>> getCategories({
@@ -16,7 +16,7 @@ class CategoriesService {
   }) async {
     try {
       final response = await http.get(
-        Uri.parse('$_apiBaseUrl/categories/?skip=$skip&limit=$limit'),
+        Uri.parse('$apiBaseUrl/categories/?skip=$skip&limit=$limit'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -36,7 +36,7 @@ class CategoriesService {
   static Future<Category> getCategoryByID(int categoryId) async {
     try {
       final response = await http.get(
-        Uri.parse('$_apiBaseUrl/categories/$categoryId'),
+        Uri.parse('$apiBaseUrl/categories/$categoryId'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -66,7 +66,7 @@ class CategoriesService {
       };
 
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl/categories/'),
+        Uri.parse('$apiBaseUrl/categories/'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
       );

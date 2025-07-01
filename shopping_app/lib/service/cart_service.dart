@@ -3,16 +3,15 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/order.dart';
-
+import '../utils/constants.dart';
 
 class CartService {
-  static const String _apiBaseUrl = 'http://10.0.2.2:8000';
 
   //retrieve the current cart
   Future<Order?> getUserCart(String userUid) async {
     try {
       final response = await http.get(
-        Uri.parse('$_apiBaseUrl/users/$userUid/cart/'),
+        Uri.parse('$apiBaseUrl/users/$userUid/cart/'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -41,7 +40,7 @@ class CartService {
     try {
       final response = await http.get(
         Uri.parse(
-          '$_apiBaseUrl/users/$userUid/orders/?skip=$skip&limit=$limit'),
+          '$apiBaseUrl/users/$userUid/orders/?skip=$skip&limit=$limit'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -65,7 +64,7 @@ class CartService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl/users/$userUid/cart/items/?product_id=$productId&quantity=$quantity'),
+        Uri.parse('$apiBaseUrl/users/$userUid/cart/items/?product_id=$productId&quantity=$quantity'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -80,7 +79,7 @@ class CartService {
   Future<bool> removeOrderItem(int itemId) async {
     try {
       final response = await http.delete(
-        Uri.parse('$_apiBaseUrl/order-items/$itemId'),
+        Uri.parse('$apiBaseUrl/order-items/$itemId'),
         headers: {
           'Content-Type': 'application/json',
         },

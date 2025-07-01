@@ -1,13 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-// Assuming all your shipping address related models are in this file:
 import '../models/shipping_address.dart'; 
+import '../utils/constants.dart';
 
 
 class ShippingAddressService {
   // Use the same base URL as your CartService
-  static const String _apiBaseUrl = 'http://10.0.2.2:8000';
 
   // Private helper for headers (can be expanded for auth if needed)
   Map<String, String> _getHeaders() {
@@ -25,7 +24,7 @@ class ShippingAddressService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl/user/$userUid/addresses/'),
+        Uri.parse('$apiBaseUrl/user/$userUid/addresses/'),
         headers: _getHeaders(),
         body: jsonEncode(addressData.toJson()),
       );
@@ -53,7 +52,7 @@ class ShippingAddressService {
   }) async {
     try {
       final response = await http.get(
-        Uri.parse('$_apiBaseUrl/user/$userUid/addresses/'),
+        Uri.parse('$apiBaseUrl/user/$userUid/addresses/'),
         headers: _getHeaders(),
       );
 
@@ -83,7 +82,7 @@ class ShippingAddressService {
       // Assuming your backend uses PUT for full replacement, not PATCH for partial update
       // If it's PATCH, change http.put to http.patch
       final response = await http.put(
-        Uri.parse('$_apiBaseUrl/user/$userUid/addresses/$addressId'),
+        Uri.parse('$apiBaseUrl/user/$userUid/addresses/$addressId'),
         headers: _getHeaders(),
         body: jsonEncode(addressUpdateData.toJson()),
       );
@@ -113,7 +112,7 @@ class ShippingAddressService {
   }) async {
     try {
       final response = await http.delete(
-        Uri.parse('$_apiBaseUrl/user/$userUid/addresses/$addressId'),
+        Uri.parse('$apiBaseUrl/user/$userUid/addresses/$addressId'),
         headers: _getHeaders(),
       );
 

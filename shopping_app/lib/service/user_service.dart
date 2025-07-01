@@ -4,11 +4,11 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shopping_app/models/user.dart';
+import '../utils/constants.dart';
 
 //need postAPI to check the api need
 
 class AuthService {
-  static const String _apiBaseUrl = 'http://10.0.2.2:8000'; 
 
   // Handle Google Sign-In with backend save
   static Future<UserModel?> handleGoogleSignIn() async {
@@ -57,7 +57,7 @@ class AuthService {
 
       // print('Sending payload: $payload');
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl/users/'),
+        Uri.parse('$apiBaseUrl/users/'),
         headers: {
           'Content-Type': 'application/json',
         },
