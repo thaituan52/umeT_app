@@ -29,8 +29,7 @@ void main() async {
         ChangeNotifierProvider<HomeController>(
           create: (context) => HomeController(
             categoriesService: context.read<CategoriesService>(),
-            cartService: context.read<CartService>(),
-            productService: context.read<ProductService>(),
+            // productService: context.read<ProductService>(), may need in the future
           ),
         ),
         ChangeNotifierProvider<CartController>(

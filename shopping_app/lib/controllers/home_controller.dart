@@ -12,8 +12,8 @@ import '../service/product_service.dart';
 class HomeController extends ChangeNotifier{
   UserModel? user; 
   final CategoriesService _categoriesService;
-  final CartService _cartService;
-  final ProductService _productService;
+  // final CartService _cartService;
+  // final ProductService _productService;
 
 
   String _searchQuery = "search";
@@ -30,11 +30,10 @@ class HomeController extends ChangeNotifier{
 
   HomeController({
     required CategoriesService categoriesService,
-    required CartService cartService,
-    required ProductService productService,
-    }) : _categoriesService = categoriesService,
-         _cartService = cartService,
-         _productService = productService 
+    // required ProductService productService,
+    }) : //  _productService = productService, 
+         _categoriesService = categoriesService
+
          {
           loadCategories();
          }

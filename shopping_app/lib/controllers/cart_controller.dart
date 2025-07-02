@@ -76,7 +76,7 @@ class CartController extends ChangeNotifier {
     int productId, 
     {int quantity = 1
     }) async {
-      // <--- CHANGE: Add a check for the user. --->
+      //Add a check for the user.
       if (user == null) {
         _error = 'Cannot add to cart: User is not authenticated.';
         notifyListeners();
