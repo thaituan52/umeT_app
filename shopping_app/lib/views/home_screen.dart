@@ -44,7 +44,6 @@ class HomeScreen extends StatelessWidget {
                             //   minHeight: MediaQuery.of(context).size.height,
                             // ),
                             child: ProductGridWidget(
-                              user: currentUser, // Pass user if ProductGridWidget still needs it for ProductDetailScreen
                               homeController: homeController, // Pass HomeController
                               cartController: cartController, // Pass CartController
                             ),

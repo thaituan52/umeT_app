@@ -55,7 +55,7 @@ class _LoginCheckState extends State<LoginCheck> {
             // Schedule the loadCart() call to run after the build is complete.
             // This prevents the 'setState() during build' error.
             Future.microtask(() async {
-              await homeController.resetState();
+              // await homeController.resetState();
               await cartController.loadCart();
               // No need for setState here if loadCart() calls notifyListeners().
               // notifyListeners() will cause the Consumer widgets to rebuild.
@@ -66,8 +66,8 @@ class _LoginCheckState extends State<LoginCheck> {
             _lastUserId = currentUserId;
           } else if (currentUserId == null) {
             // User has logged out. Reset the state.
-            debugPrint('User logged out. Resetting last user ID.');
-            _lastUserId = null;
+            debugPrint('User logged out.');
+            //_lastUserId = null;
 
             final homeController = context.read<HomeController>();
             Future.microtask(() => homeController.resetState());

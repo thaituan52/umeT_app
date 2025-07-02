@@ -10,7 +10,7 @@ class ProductService {
   static const String _apiBaseUrl = '$apiBaseUrl/products';
 
 
-  static Future<List<Product>> getProducts({
+  Future<List<Product>> getProducts({
     int skip = 0,
     int limit = 100,
     int? categoryId,

@@ -43,7 +43,7 @@ class CartController extends ChangeNotifier {
 
   // Load user's cart
   Future<void> loadCart() async {
-    // <--- CHANGE: Add a check for the user. --->
+    // Add a check for the user.
     if (user == null) {
       debugPrint('loadCart called but user is null. Aborting.');
       return; // Abort if there's no user to load a cart for.
@@ -53,12 +53,12 @@ class CartController extends ChangeNotifier {
     _error = null;
 
     try {
-      // <--- CHANGE: Use the public 'user' property. --->
+      //Use the public 'user' property.
       _cart = await _cartService.getUserCart(user!.uid);
       final List<OrderItem> orderItems = _cart?.items ?? [];
 
       final List<Future<CartItemDetails?>> futures = orderItems.map((item) async {
-        final Product product = await ProductService.getProductById(item.productId);
+        final Product product = await ProductService.getProductById(item.productId); //temporal
         return CartItemDetails(orderItem: item, product: product);
       }).toList();
 
