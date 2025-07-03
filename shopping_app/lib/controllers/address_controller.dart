@@ -69,16 +69,12 @@ class AddressController extends ChangeNotifier {
       return false;
     }
 
-    _setLoading(true);
-    _setErrorMessage(null);
-
     try {
       final newAddress = await _shippingAddressService.createAddress(
         userUid: userUid,
         addressData: addressData);
       if (newAddress != null) {
-        _addresses.add(newAddress);
-        notifyListeners();
+        loadAddresses();
         return true;
       } else {
         _setErrorMessage('Failed to add address');
@@ -87,8 +83,6 @@ class AddressController extends ChangeNotifier {
     } catch  (e) {
       _setErrorMessage('Failed to load addresses"$e');
       return false;
-    } finally {
-      _setLoading(false);
     }
   }
 
@@ -100,8 +94,6 @@ class AddressController extends ChangeNotifier {
       return false;
     }
 
-    _setLoading(true);
-    _setErrorMessage(null);
 
     try {
       final updatedAddress = await _shippingAddressService.updateAddress(
@@ -110,11 +102,7 @@ class AddressController extends ChangeNotifier {
         addressUpdateData: updateData,
       );
       if (updatedAddress != null) {
-        final index = _addresses.indexWhere((addr) => addr.id == addressId);
-        if (index != -1) {
-          _addresses[index] = updatedAddress;
-        }
-        notifyListeners();
+        loadAddresses();
         return true;
       } else {
         _setErrorMessage('Failed to update address: Address not found or invalid data.');
@@ -123,8 +111,6 @@ class AddressController extends ChangeNotifier {
     } catch (e) {
       _setErrorMessage('Error updating address: $e');
       return false;
-    } finally {
-      _setLoading(false);
     }
   }
 
@@ -134,18 +120,13 @@ class AddressController extends ChangeNotifier {
       _setErrorMessage('User not logged in. Cannot delete address.');
       return false;
     }
-
-    _setLoading(true);
-    _setErrorMessage(null);
-
     try {
       final success = await _shippingAddressService.deleteAddress(
         userUid: userUid,
         addressId: addressId,
       );
       if (success) {
-        _addresses.removeWhere((addr) => addr.id == addressId);
-        notifyListeners();
+        loadAddresses();
         return true;
       } else {
         _setErrorMessage('Failed to delete address: Not found or forbidden.');
@@ -154,9 +135,11 @@ class AddressController extends ChangeNotifier {
     } catch (e) {
       _setErrorMessage('Error deleting address: $e');
       return false;
-    } finally {
-      _setLoading(false);
     }
+  }
+
+   Future<void> refreshAddresses() async {
+    await loadAddresses();
   }
 
 
