@@ -9,11 +9,11 @@ from ..database import get_db # Import DB dependency
 from ..utils.auth import hash_password # For password verification
 
 router = APIRouter(
-    prefix="/user/{user_uid}/addresses",
+    prefix="",
     tags=["Shipping Addresses"],
 )
 
-@router.post("/", response_model=ShippingAddressResponse)
+@router.post("/user/{user_uid}/addresses/", response_model=ShippingAddressResponse)
 async def create_address_for_user(
     user_uid: str,
     address: ShippingAddressCreate,
@@ -24,14 +24,21 @@ async def create_address_for_user(
         raise HTTPException(status_code=404, detail="Duplicate address")
     return db_address
 
-@router.get("/", response_model=List[ShippingAddressResponse])
+@router.get("addresses/{address_id}", response_model=ShippingAddressResponse)
+async def get_user_address(
+    address_id: int, 
+    db: Session = Depends(get_db)):
+    db_address = crud_addresses.get_addresses_by_id(db, address_id)
+    return db_address
+
+@router.get("/user/{user_uid}/addresses/", response_model=List[ShippingAddressResponse])
 async def get_user_address(
     user_uid: str, 
     db: Session = Depends(get_db)):
     db_addresses = crud_addresses.get_addresses_by_user(db, user_uid)
     return db_addresses
 
-@router.put("/{address_id}", response_model=ShippingAddressResponse)
+@router.put("/user/{user_uid}/addresses/{address_id}", response_model=ShippingAddressResponse)
 async def update_user_address(
     address_id: int,
     address_update: ShippingAddressUpdate,
@@ -42,7 +49,7 @@ async def update_user_address(
         raise HTTPException(status_code=404, detail="Address not found")
     return db_address
 
-@router.delete("/{address_id}")
+@router.delete("/user/{user_uid}/addresses/{address_id}")
 async def delete_address(
     address_id: int, 
     db: Session = Depends(get_db)):

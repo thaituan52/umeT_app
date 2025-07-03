@@ -55,6 +55,8 @@ def update_order(db: Session, order_id: int, order_update: OrderUpdate):
     if not db_order:
         return None
 
+    
+
     # Validate shipping_address_id if provided
     if order_update.shipping_address_id is not None:
         address = get_address_by_id(db, order_update.shipping_address_id)
@@ -66,6 +68,14 @@ def update_order(db: Session, order_id: int, order_update: OrderUpdate):
             raise ValueError(
                 f"Shipping address with ID {order_update.shipping_address_id} does not belong to the user of this order."
             )
+        
+        # if order_update.status:
+        #     if order_update.status not in [0, 1, 2, 3]:
+        #         return None
+    
+        #     # Validate shipping address for processing/completed orders
+        #     if order_update.status in [2, 3] and not order_update.shipping_address_id:
+        #         return None
 
     update_data = order_update.model_dump(exclude_unset=True)
     items_data = update_data.pop('items', None)

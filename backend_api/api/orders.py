@@ -58,6 +58,8 @@ async def get_user_cart_endpoint(user_uid: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Cart not found")
     
     return cart
+
+
 # USING TO ADD ITEM TO CART
 @router.post("/users/{user_uid}/cart/items/")
 async def add_to_cart(
@@ -108,9 +110,16 @@ async def update_order_status(
             status_code=400, 
             detail="Shipping address is required before moving order to processing or completed status"
         )
+    # try:
+    #     updated_order = crud_orders.update_order(db, order_id, OrderUpdate(status=status))
+    #     if not updated_order:
+    #         raise HTTPException(status_code=404, detail="Order not found")
+    #     return updated_order
+    # except Exception as e:
+    #     raise HTTPException(status_code=400, detail=str(e))
     
     updated_order = crud_orders.update_order(db, order_id, OrderUpdate(status=status))
-    return {"message": "Order status updated", "order_id": order_id, "new_status": status}
+    return updated_order
 
 @router.delete("/orders/{order_id}")
 async def delete_order(order_id: int, db: Session = Depends(get_db)):

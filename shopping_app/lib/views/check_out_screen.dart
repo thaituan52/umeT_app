@@ -1,4 +1,4 @@
-// lib/views/checkout_screen.dart (Updated)
+// lib/views/checkout_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +8,7 @@ import '../controllers/address_controller.dart';
 import '../controllers/cart_controller.dart';
 import '../models/shipping_address.dart';
 import '../models/order.dart';
+import '../service/cart_service.dart';
 import '../widgets/address_selection_sheet.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -21,12 +22,14 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   ShippingAddress? _selectedAddress;
+  late final CartService _cartService; // Declare CartService instance
 
   @override
   void initState() {
     super.initState();
+    _cartService = CartService(); // Initialize CartService
     final addressController = Provider.of<AddressController>(context, listen: false);
-    
+
     if (addressController.addresses.isNotEmpty) {
       _selectedAddress = addressController.addresses.firstWhere(
         (addr) => addr.isDefault,
@@ -36,20 +39,58 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Future<void> _handlePayment() async {
+    if (!mounted) return; // Check if the widget is still mounted before async operations
+
     if (_selectedAddress == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Please select a shipping address.")),
-        );
-        return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select a shipping address.")),
+      );
+      return;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Processing payment...")),
     );
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (!mounted) return;
-    Navigator.pop(context, true); // return success flag
+
+    try {
+      final cartController = Provider.of<CartController>(context, listen: false);
+      final userUid = cartController.user!.uid; // Get user UID from CartController
+
+      // 1. Update billing method and shipping address using the first API call
+      final String billingMethod = "Cash on Delivery"; // Example billing method
+
+      final OrderUpdate orderDetailsUpdate = OrderUpdate(
+        billingMethod: billingMethod,
+        shippingAddressId: _selectedAddress!.id, // Use the selected address ID
+        // Do NOT set status here if you want to use the second API call for it
+      ); 
+      // Call the first updateOrder function to update details
+      await _cartService.updateOrder(
+        widget.order.id, // The order ID from your widget
+        orderDetailsUpdate,
+        userUid,
+      );
+      
+      // 2. Update the order status to 2 (shipping) using the second API call
+      // You can hardcode 2 here as per your requirement "update its status to 2 (shipping)"
+      await _cartService.updateOrderStatus(
+        userUid,
+        widget.order.id,
+        2, // Status for 'shipping'
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Order placed successfully!")),
+      );
+      Navigator.pop(context, true); // return success flag
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to place order: ${e.toString()}")),
+      );
+      print("Error during payment process: $e"); // For debugging
+    }
   }
 
   void _showAddressSelection() async {
@@ -156,7 +197,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 )
               else
                 const Text("No address selected.", style: TextStyle(color: Colors.grey)),
-              
+
               const Divider(height: 32),
 
               // NEW: Items Summary Section
@@ -169,7 +210,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               const Text("Order Total", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Text("\$${widget.order.totalAmount.toStringAsFixed(2)}", style: const TextStyle(fontSize: 22, color: Colors.orange, fontWeight: FontWeight.bold)),
-              
+
               // Spacing before the button
               const SizedBox(height: 40),
 
@@ -196,4 +237,3 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 }
-

@@ -19,7 +19,7 @@ class CartService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        return Order.fromJson(data, userUid, status:  1);
+        return Order.fromJson(data, userUid);
       } else if (response.statusCode == 404) {
           return null; //cart not found
       } else { //internal sever problem
@@ -86,6 +86,60 @@ class CartService {
       );
 
       return response.statusCode == 200;
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  //@router.put("/orders/{order_id}", response_model=OrderResponse)
+  Future<Order> updateOrder(
+    int orderId, 
+    OrderUpdate orderUpdateData, 
+    String userUid,
+    ) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$apiBaseUrl/orders/$orderId'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(orderUpdateData.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        return Order.fromJson(data, userUid); // Assuming Order.fromJson can handle partial updates or takes a userUid
+      } else if (response.statusCode == 404) {
+        throw Exception('Order not found');
+      } else {
+        throw Exception('Failed to update order: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }  
+  //@router.put("/orders/{order_id}/status/{status}")
+  Future<Order> updateOrderStatus(
+    String userUid,
+    int orderId, 
+    int status,
+    ) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$apiBaseUrl/orders/$orderId/status/$status'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        return Order.fromJson(data, userUid); // Assuming Order.fromJson can handle partial updates or takes a userUid
+      } else if (response.statusCode == 404) {
+        throw Exception('Order not found');
+      } else {
+        throw Exception('Failed to update order: ${response.statusCode} - ${response.body}');
+      }
     } catch (e) {
       throw Exception('Network error: $e');
     }
