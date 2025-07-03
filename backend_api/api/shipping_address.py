@@ -49,5 +49,5 @@ async def delete_address(
 
     db_address = crud_addresses.delete_shipping_address(db, address_id)
     if not db_address:
-        raise HTTPException(status_code=404, detail="Address not found")
+        raise HTTPException(status_code=404, detail="Address logic error")
     return db_address

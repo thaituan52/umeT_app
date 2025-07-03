@@ -20,18 +20,26 @@ def create_shipping_address(db: Session, address: ShippingAddressCreate, user_ui
     
     if exist:
         return None 
-    if address.is_default: #if it is a new default, make the current default off
+    should_be_default = address.is_default
+    # Check if this is the very first address for this user
+    total_addresses_for_user = db.query(ShippingAddress).filter(
+        ShippingAddress.user_uid == user_uid
+    ).count() 
+
+    if total_addresses_for_user == 0:
+        should_be_default = True
+
+    if should_be_default:
         db.query(ShippingAddress).filter(
             ShippingAddress.user_uid == user_uid,
             ShippingAddress.is_default == True
         ).update({"is_default": False})
-    
+
     db_address = ShippingAddress(
-        user_uid = user_uid,
-        address =  address.address,
-        is_default = address.is_default
+        user_uid=user_uid,
+        address=address.address,
+        is_default=should_be_default  
     )
-    
     db.add(db_address)
     db.commit()
     db.refresh(db_address)
@@ -42,6 +50,9 @@ def update_shipping_address(db: Session, address_id: int, address_update: Shippi
     if not db_address:
         return None
     update_data = address_update.model_dump(exclude_unset=True)
+    if update_data.get("is_default") is False and db_address.is_default is True:
+        update_data["is_default"] = True
+    
 
     if update_data.get("is_default") is True:
         db.query(ShippingAddress).filter( #Update the rest is_default to False
@@ -62,8 +73,14 @@ def delete_shipping_address(db: Session, address_id: int):
     
     if not db_address:
         return None 
+    user_uid = db_address.user_uid
+    existing = db.query(ShippingAddress).filter(
+        ShippingAddress.user_uid == user_uid,
+        ShippingAddress.is_default == True).count()
 
     if db_address.is_default:
+        if existing == 1:
+            return None
         #if exist another shippingAddress, promote it to default, else not delete anymore
         other_address_to_promote = db.query(ShippingAddress).filter( 
             ShippingAddress.user_uid == db_address.user_uid,

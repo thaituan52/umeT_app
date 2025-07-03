@@ -26,6 +26,13 @@ class AddressController extends ChangeNotifier {
         loadAddresses();
        }
 
+  void resetAddress() {
+    _addresses = [];
+    _isLoading = false;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();

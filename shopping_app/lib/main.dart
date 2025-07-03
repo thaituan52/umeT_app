@@ -45,7 +45,7 @@ void main() async {
             authService: context.read<AuthService>(),
           ),
         ),
-        ChangeNotifierProvider<AddressController>( // <--- NEW CONTROLLER PROVIDER
+        ChangeNotifierProvider<AddressController>( 
           create: (context) => AddressController(
             shippingAddressService: context.read<ShippingAddressService>(),
             homeController: context.read<HomeController>(), // Inject HomeController

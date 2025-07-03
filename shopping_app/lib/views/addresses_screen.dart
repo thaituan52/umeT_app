@@ -2,13 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_app/controllers/address_controller.dart';
+import 'package:shopping_app/models/shipping_address.dart';
+import 'package:shopping_app/widgets/address_form.dart'; 
 
 class AddressesScreen extends StatelessWidget {
   const AddressesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Move the Consumer to wrap the entire Scaffold
     return Consumer<AddressController>(
       builder: (context, controller, child) {
         // Display any errors via SnackBar
@@ -34,11 +35,10 @@ class AddressesScreen extends StatelessWidget {
             foregroundColor: Colors.white,
             actions: [
               IconButton(
-                // Now 'controller' is in scope here
-                icon: const Icon(Icons.refresh, color: Colors.white), // Changed color to white for visibility
+                icon: const Icon(Icons.refresh, color: Colors.white),
                 onPressed: controller.isLoading
-                    ? null // Disable button when loading
-                    : () => controller.loadAddresses(), // Call loadAddresses for refresh
+                    ? null
+                    : () => controller.loadAddresses(),
               ),
             ],
           ),
@@ -104,9 +104,6 @@ class AddressesScreen extends StatelessWidget {
                                   ],
                                 ),
                                 const SizedBox(height: 8),
-                                // This line was showing `address.address` which is incorrect.
-                                // Assuming your ShippingAddress model has individual fields like street, city, etc.
-                                // It should be combined from the address fields.
                                 Text(address.address),
                                 const SizedBox(height: 12),
                                 Row(
@@ -114,10 +111,24 @@ class AddressesScreen extends StatelessWidget {
                                   children: [
                                     IconButton(
                                       icon: const Icon(Icons.edit, size: 20),
-                                      onPressed: () {
-                                        // TODO: Navigate to an "Edit Address" screen
-                                        // You would pass the `address` object to that screen
-                                        debugPrint('Edit address ${address.id}');
+                                      onPressed: () async {
+                                        // Show dialog for editing
+                                        final result = await showDialog<ShippingAddressUpdate>(
+                                          context: context,
+                                          builder: (ctx) => AddressFormDialog(
+                                            initialAddress: address, // Pass existing address
+                                          ),
+                                        );
+
+                                        if (result != null && controller.isLoading == false) {
+                                          // Perform update if dialog returned data and not already loading
+                                          final success = await controller.updateAddress(address.id, result);
+                                          if (context.mounted && success) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('Address updated successfully!')),
+                                            );
+                                          }
+                                        }
                                       },
                                     ),
                                     IconButton(
@@ -161,9 +172,22 @@ class AddressesScreen extends StatelessWidget {
                       },
                     ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              // TODO: Navigate to an "Add Address" screen
-              debugPrint('Add new address');
+            onPressed: () async {
+              // Show dialog for adding new address
+              final result = await showDialog<ShippingAddressCreate>(
+                context: context,
+                builder: (ctx) => const AddressFormDialog(), // No initial address for adding
+              );
+
+              if (result != null && controller.isLoading == false) {
+                // Perform add if dialog returned data and not already loading
+                final success = await controller.addAddress(result);
+                if (context.mounted && success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Address added successfully!')),
+                  );
+                }
+              }
             },
             backgroundColor: const Color.fromARGB(255, 158, 129, 163),
             foregroundColor: Colors.white,

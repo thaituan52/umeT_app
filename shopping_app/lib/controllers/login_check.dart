@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:shopping_app/controllers/address_controller.dart';
 import 'package:shopping_app/views/login_screen.dart';
 import 'package:shopping_app/models/user.dart';
 import 'package:shopping_app/views/main_screen.dart';
@@ -45,6 +46,7 @@ class _LoginCheckState extends State<LoginCheck> {
             // Get the controllers from the context.
             final homeController = context.read<HomeController>();
             final cartController = context.read<CartController>();
+            final addressController = context.read<AddressController>();
 
             // Update the user property on the controllers.
             final currentUserModel = UserModel.fromFirebaseUser(currentUser!);
@@ -57,8 +59,7 @@ class _LoginCheckState extends State<LoginCheck> {
             Future.microtask(() async {
               // await homeController.resetState();
               await cartController.loadCart();
-              // No need for setState here if loadCart() calls notifyListeners().
-              // notifyListeners() will cause the Consumer widgets to rebuild.
+              await addressController.loadAddresses();
             });
 
             //Update the state with the new user's UID.
@@ -70,7 +71,13 @@ class _LoginCheckState extends State<LoginCheck> {
             //_lastUserId = null;
 
             final homeController = context.read<HomeController>();
-            Future.microtask(() => homeController.resetState());
+            final addressController = context.read<AddressController>();
+
+            Future.microtask(() async {
+              homeController.resetState();
+              addressController.resetAddress();
+              });
+
           }
           // <--- END NEW LOGIC --->
 

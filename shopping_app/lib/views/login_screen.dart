@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_app/widgets/login_button.dart';
 import 'package:shopping_app/controllers/login_controller.dart'; 
@@ -36,9 +37,7 @@ class LoginScreen extends StatelessWidget {
             leading: IconButton(
               icon: Icon(Icons.close),
               onPressed: () {
-                // If this screen is pushed as a route, you can pop it.
-                // Navigator.pop(context);
-                debugPrint('Quit button pressed');
+                SystemNavigator.pop();
               },
             ),
             title: Column(
