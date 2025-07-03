@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shopping_app/service/shipping_address_service.dart';
 import './controllers/login_check.dart';
 import './controllers/home_controller.dart';
 import './controllers/cart_controller.dart';
@@ -9,6 +10,7 @@ import './service/cart_service.dart';
 import './service/categories_service.dart';
 import './service/product_service.dart';
 import './service/user_service.dart';
+import 'controllers/address_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +25,7 @@ void main() async {
         Provider(create: (_) => CategoriesService()),
         Provider(create: (_) => ProductService()),
         Provider(create: (_) => AuthService()),
+        Provider(create:(_) => ShippingAddressService()),
 
         // Provide your controllers, injecting their dependencies.
         // They are created once at the start of the app - loginCheck
@@ -40,6 +43,12 @@ void main() async {
         ChangeNotifierProvider<LoginController>(
           create: (context) => LoginController(
             authService: context.read<AuthService>(),
+          ),
+        ),
+        ChangeNotifierProvider<AddressController>( // <--- NEW CONTROLLER PROVIDER
+          create: (context) => AddressController(
+            shippingAddressService: context.read<ShippingAddressService>(),
+            homeController: context.read<HomeController>(), // Inject HomeController
           ),
         ),
       ],

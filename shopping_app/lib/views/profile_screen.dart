@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../models/user.dart';
 import '../controllers/home_controller.dart';
+import 'addresses_screen.dart';
 
 
 
@@ -348,17 +349,6 @@ class CreditBalanceScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Credit Balance')),
       body: const Center(child: Text('Credit Balance Screen')),
-    );
-  }
-}
-
-class AddressesScreen extends StatelessWidget {
-  const AddressesScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Addresses')),
-      body: const Center(child: Text('Addresses Screen')),
     );
   }
 }
