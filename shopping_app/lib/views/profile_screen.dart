@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../models/user.dart';
 import '../controllers/home_controller.dart';
 import 'addresses_screen.dart';
+import 'orders_screen.dart';
 
 
 
@@ -201,7 +202,7 @@ class ProfileScreen extends StatelessWidget {
             title: 'Your orders',
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const YourOrdersScreen()),
+              MaterialPageRoute(builder: (context) => const OrdersScreen()),
             ),
           ),
           _buildDivider(),

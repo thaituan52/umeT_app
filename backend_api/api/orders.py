@@ -40,7 +40,7 @@ async def get_order(order_id: int, db: Session = Depends(get_db)):
 
 @router.get("/users/{user_uid}/orders/", response_model=List[OrderResponse])
 async def get_user_orders(
-    user_uid: int, 
+    user_uid: str, 
     skip: int = 0, 
     limit: int = 100, 
     db: Session = Depends(get_db)
