@@ -371,7 +371,6 @@ class CartScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (_) => CheckoutScreen(
-                      user: user!,
                       order: controller.cart!,
                     ),
                   ),
