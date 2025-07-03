@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/home_controller.dart';
 import '../controllers/cart_controller.dart'; 
-import '../models/user.dart'; 
 import '../widgets/product_grid.dart'; 
 
 class HomeScreen extends StatelessWidget {
@@ -16,7 +15,7 @@ class HomeScreen extends StatelessWidget {
     return Consumer2<HomeController, CartController>( // <--- Use Consumer2 to get both controllers
       builder: (context, homeController, cartController, child) { // Access both controllers here
         // If you need the UserModel itself, get it from the homeController
-        final UserModel? currentUser = homeController.user;
+        //final UserModel? currentUser = homeController.user;
 
         return Scaffold(
           backgroundColor: Colors.grey[50],
