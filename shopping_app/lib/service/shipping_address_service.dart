@@ -71,6 +71,30 @@ class ShippingAddressService {
     }
   }
 
+  Future<ShippingAddress?> getAddressesByID({ // Changed return type to List<ShippingAddress>
+    required String addressId,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBaseUrl/addresses/$addressId'),
+        headers: _getHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return ShippingAddress.fromJson(data); // Using ShippingAddress.fromJson
+      } else if (response.statusCode == 404) {
+        // User not found or no addresses, can return empty list or null as per preference
+        return null; // Returning an empty list is often more convenient than null for a list
+      }
+      else {
+        throw Exception('Failed to load addresses: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Network error during getAddresses: $e');
+    }
+  }
+
   /// Updates an existing shipping address.
   /// Returns the updated ShippingAddress on success, null on 404/400, or throws for other errors.
   Future<ShippingAddress?> updateAddress({ // Changed return type to ShippingAddress
