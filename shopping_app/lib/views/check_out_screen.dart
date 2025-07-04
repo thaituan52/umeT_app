@@ -8,7 +8,6 @@ import '../controllers/address_controller.dart';
 import '../controllers/cart_controller.dart';
 import '../models/shipping_address.dart';
 import '../models/order.dart';
-import '../service/cart_service.dart';
 import '../widgets/address_selection_sheet.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -22,12 +21,10 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   ShippingAddress? _selectedAddress;
-  late final CartService _cartService; // Declare CartService instance
 
   @override
   void initState() {
     super.initState();
-    _cartService = CartService(); // Initialize CartService
     final addressController = Provider.of<AddressController>(context, listen: false);
 
     if (addressController.addresses.isNotEmpty) {
@@ -54,29 +51,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     try {
       final cartController = Provider.of<CartController>(context, listen: false);
-      final userUid = cartController.user!.uid; // Get user UID from CartController
 
-      // 1. Update billing method and shipping address using the first API call
-      final String billingMethod = "Cash on Delivery"; // Example billing method
-
-      final OrderUpdate orderDetailsUpdate = OrderUpdate(
-        billingMethod: billingMethod,
-        shippingAddressId: _selectedAddress!.id, // Use the selected address ID
-        // Do NOT set status here if you want to use the second API call for it
-      ); 
-      // Call the first updateOrder function to update details
-      await _cartService.updateOrder(
-        widget.order.id, // The order ID from your widget
-        orderDetailsUpdate,
-        userUid,
-      );
-      
-      // 2. Update the order status to 2 (shipping) using the second API call
-      // You can hardcode 2 here as per your requirement "update its status to 2 (shipping)"
-      await _cartService.updateOrderStatus(
-        userUid,
-        widget.order.id,
-        2, // Status for 'shipping'
+      cartController.placeOrder(
+        widget.order.id, // Use the order ID from the widget
+        _selectedAddress!,
       );
 
       if (!mounted) return;
@@ -117,7 +95,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
-  // NEW: Helper widget to display a single cart item row (read-only)
+  // widget to display a single cart item row (read-only)
   Widget _buildCartItemRow(CartItemDetails itemDetails) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),

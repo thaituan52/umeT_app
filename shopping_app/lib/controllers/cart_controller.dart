@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shopping_app/models/shipping_address.dart';
 import 'package:shopping_app/service/product_service.dart';
 import '../models/cart_item_detail.dart';
 import '../models/order.dart';
@@ -136,5 +137,40 @@ class CartController extends ChangeNotifier {
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();
+  }
+
+
+    Future<void> placeOrder(int orderId, ShippingAddress selectedAddress) async {
+
+    try {
+
+      // 1. Update billing method and shipping address using the first API call
+      final String billingMethod = "Cash on Delivery"; // Example billing method
+
+      final OrderUpdate orderDetailsUpdate = OrderUpdate(
+        billingMethod: billingMethod,
+        shippingAddressId: selectedAddress.id, // Use the selected address ID
+        // Do NOT set status here if you want to use the second API call for it
+      ); 
+      // Call the first updateOrder function to update details
+      await _cartService.updateOrder(
+        orderId, // The order ID from your widget
+        orderDetailsUpdate,
+        user!.uid,
+      );
+      
+      // 2. Update the order status to 2 (shipping) using the second API call
+      // You can hardcode 2 here as per your requirement "update its status to 2 (shipping)"
+      await _cartService.updateOrderStatus(
+        user!.uid,
+        orderId,
+        2, // Status for 'shipping'
+      );
+
+      loadCart(); // Refresh the cart after placing the order
+      notifyListeners(); // Notify listeners to update the UI
+    } catch (e) {
+      rethrow;
+    }
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/order_item.dart'; // Assuming you have an OrderItem model
 import '../models/product.dart'; // Assuming you have a Product model
-import 'product_icon.dart'; // Re-using your product_icon.dart
 
 class OrderItemCard extends StatelessWidget {
   final OrderItem orderItem;

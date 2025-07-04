@@ -59,13 +59,13 @@ factory Order.fromJson(Map<String, dynamic> json, userUid) {
 }
 }
 class OrderUpdate {
-  final int? status;
+  // final int? status;
   final int? shippingAddressId;
   final String? billingMethod;
   final String? contactPhone;
 
-  OrderUpdate({
-    this.status,
+  OrderUpdate({ //make the update do not contain status
+    // this.status,
     this.shippingAddressId,
     this.billingMethod,
     this.contactPhone,
@@ -73,9 +73,9 @@ class OrderUpdate {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {};
-    if (status != null) {
-      data['status'] = status;
-    }
+    // if (status != null) {
+    //   data['status'] = status;
+    // }
     if (shippingAddressId != null) {
       data['shipping_address_id'] = shippingAddressId;
     }

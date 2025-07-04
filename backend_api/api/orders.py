@@ -83,6 +83,8 @@ async def update_order_endpoint(
 ):
     """Update an order"""
     try:
+        if order_update.status != 1 and order_update.status: #can only update the status 1 or no status for this api
+            raise HTTPException(status_code=404, detail=order_update.status)
         db_order = crud_orders.update_order(db, order_id, order_update)
         if not db_order:
             raise HTTPException(status_code=404, detail="Order not found")
