@@ -1,3 +1,5 @@
+// lib/controllers/cart_controller.dart
+
 import 'package:flutter/material.dart';
 import 'package:shopping_app/models/shipping_address.dart';
 import 'package:shopping_app/service/product_service.dart';
@@ -10,14 +12,20 @@ import '../service/cart_service.dart';
 
 class CartController extends ChangeNotifier {
   final CartService _cartService;
-  
+
   UserModel? user; // This will be set by the LoginCheck widget.
 
   Order? _cart;
   bool _isLoading = false;
   String? _error;
-  
+
   List<CartItemDetails> _cartItemsWithDetails = [];
+
+  // New property for user's past orders
+  List<Order>? _userOrders;
+  bool _ordersLoading = false;
+  String? _ordersError;
+
 
   CartController({
     required CartService cartService,
@@ -30,6 +38,11 @@ class CartController extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
+  List<Order>? get userOrders => _userOrders;
+  bool get ordersLoading => _ordersLoading;
+  String? get ordersError => _ordersError;
+
+
   // Returns the total quantity of all items in the cart
   int get totalCartQuantity {
     int total = 0;
@@ -37,29 +50,34 @@ class CartController extends ChangeNotifier {
       total += item.orderItem.quantity;
     }
     return total;
-  } 
+  }
 
   double get totalAmount => _cart?.totalAmount ?? 0.0;
 
 
   // Load user's cart
   Future<void> loadCart() async {
-    // Add a check for the user.
     if (user == null) {
       debugPrint('loadCart called but user is null. Aborting.');
-      return; // Abort if there's no user to load a cart for.
+      _error = 'User not authenticated.'; // Set an error for the cart
+      notifyListeners();
+      return;
     }
-    
+
     _setLoading(true);
     _error = null;
 
     try {
-      //Use the public 'user' property.
       _cart = await _cartService.getUserCart(user!.uid);
       final List<OrderItem> orderItems = _cart?.items ?? [];
 
       final List<Future<CartItemDetails?>> futures = orderItems.map((item) async {
-        final Product product = await ProductService.getProductById(item.productId); //temporal
+        //TODO: Handle potential null product from service
+        final Product product = await ProductService.getProductById(item.productId);
+        // if (product != null) {
+        //   return CartItemDetails(orderItem: item, product: product);
+        // }
+        // return null; // Return null if product not found
         return CartItemDetails(orderItem: item, product: product);
       }).toList();
 
@@ -74,10 +92,9 @@ class CartController extends ChangeNotifier {
   }
 
   Future<bool> addItemToCart(
-    int productId, 
+    int productId,
     {int quantity = 1
     }) async {
-      //Add a check for the user.
       if (user == null) {
         _error = 'Cannot add to cart: User is not authenticated.';
         notifyListeners();
@@ -100,7 +117,6 @@ class CartController extends ChangeNotifier {
 
   // Remove item from cart
   Future<bool> removeItem(int itemId) async {
-    // <--- CHANGE: Add a check for the user. --->
     if (user == null) {
       _error = 'Cannot remove from cart: User is not authenticated.';
       notifyListeners();
@@ -110,9 +126,10 @@ class CartController extends ChangeNotifier {
     try {
       final success = await _cartService.removeOrderItem(itemId);
       if (success) {
+        // Directly remove from _cartItemsWithDetails for immediate UI update
         _cartItemsWithDetails.removeWhere((cartItem) => cartItem.orderItem.id == itemId);
-        notifyListeners();
-        await loadCart();
+        // Recalculate total if necessary or reload cart
+        await loadCart(); // This will refresh all cart details
         return true;
       }
       return false;
@@ -128,7 +145,7 @@ class CartController extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
-  
+
   // Refresh cart data
   Future<void> refreshCart() async {
     await loadCart();
@@ -139,38 +156,80 @@ class CartController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // New method to fetch user's past orders
+  Future<void> fetchUserOrders() async {
+    if (user == null) {
+      debugPrint('fetchUserOrders called but user is null. Aborting.');
+      _ordersError = 'User not authenticated.'; // Set error for orders
+      notifyListeners();
+      _userOrders = []; // Ensure it's an empty list
+      return;
+    }
 
-    Future<void> placeOrder(int orderId, ShippingAddress selectedAddress) async {
+    _setOrdersLoading(true);
+    _ordersError = null; // Clear previous errors
 
     try {
+      _userOrders = await _cartService.getUserOrders(user!.uid);
+    } catch (e, stacktrace) {
+      _ordersError = 'Failed to load orders: $e';
+      debugPrint('Error loading orders: $e\n$stacktrace');
+      _userOrders = []; // Ensure it's an empty list on error
+    } finally {
+      _setOrdersLoading(false);
+    }
+  }
 
-      // 1. Update billing method and shipping address using the first API call
-      final String billingMethod = "Cash on Delivery"; // Example billing method
+  void _setOrdersLoading(bool loading) {
+    _ordersLoading = loading;
+    notifyListeners();
+  }
 
+  // Renamed to clarify its purpose (from 'placeOrder' in the previous answer)
+  // This handles updating an existing order (like a cart becoming an actual order).
+  Future<void> finalizeOrder(int orderId, ShippingAddress selectedAddress) async {
+    if (user == null) {
+      throw Exception('User is not authenticated to finalize order.');
+    }
+    if (cart == null) {
+        throw Exception('No active cart to finalize.');
+    }
+
+    try {
+      final String billingMethod = "Cash on Delivery"; // This could be dynamic from UI
+
+      // 1. Update billing method and shipping address
       final OrderUpdate orderDetailsUpdate = OrderUpdate(
         billingMethod: billingMethod,
-        shippingAddressId: selectedAddress.id, // Use the selected address ID
-        // Do NOT set status here if you want to use the second API call for it
-      ); 
-      // Call the first updateOrder function to update details
+        shippingAddressId: selectedAddress.id,
+        // Status is updated in a separate call for clarity/control
+      );
       await _cartService.updateOrder(
-        orderId, // The order ID from your widget
+        orderId,
         orderDetailsUpdate,
         user!.uid,
       );
-      
-      // 2. Update the order status to 2 (shipping) using the second API call
-      // You can hardcode 2 here as per your requirement "update its status to 2 (shipping)"
+
+      // 2. Update the order status to 2 (shipping/processing)
       await _cartService.updateOrderStatus(
         user!.uid,
         orderId,
-        2, // Status for 'shipping'
+        2, // Status for 'shipping' or 'processing'
       );
 
-      loadCart(); // Refresh the cart after placing the order
-      notifyListeners(); // Notify listeners to update the UI
+      // After finalizing, the current cart should ideally be cleared or reset,
+      // and a new one might be created implicitly by the backend/service.
+      // We should also refresh the user's past orders list.
+      _cart = null; // Clear the current cart
+      _cartItemsWithDetails = []; // Clear detailed items
+      await fetchUserOrders(); // Refresh the list of past orders
+      notifyListeners(); // Notify UI that cart and orders have changed
     } catch (e) {
+      // Re-throw the exception for the UI to handle messages
       rethrow;
     }
   }
+
+  // You might want a dedicated method for fetching a single order if needed,
+  // but `getUserOrders` fetches all for the OrdersScreen.
 }

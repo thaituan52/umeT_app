@@ -52,7 +52,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     try {
       final cartController = Provider.of<CartController>(context, listen: false);
 
-      cartController.placeOrder(
+      cartController.finalizeOrder(
         widget.order.id, // Use the order ID from the widget
         _selectedAddress!,
       );
