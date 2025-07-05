@@ -131,7 +131,7 @@ async def delete_order(order_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Order not found")
     
     order.status = 0  # Deactivated
-    order.updated_at = datetime.now(timezone.utc)
+    order.updated_at = datetime.now()
     db.commit()
     
     return {"message": "Order deleted successfully"}

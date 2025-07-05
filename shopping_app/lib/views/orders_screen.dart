@@ -1,10 +1,10 @@
-// lib/views/orders_screen.dart 
+// lib/views/orders_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_app/service/product_service.dart';
 import '../models/order.dart';
-import '../controllers/cart_controller.dart'; 
+import '../controllers/cart_controller.dart';
 import '../widgets/order_item_card.dart';
 import '../models/product.dart';
 
@@ -17,15 +17,7 @@ class OrdersScreen extends StatefulWidget {
 
 class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  // No longer need CartService directly here, as CartController will manage it.
-  // late final CartService _cartService; // REMOVE THIS LINE
 
-  // No longer need _ordersFuture directly, as CartController will provide the list.
-  // late Future<List<Order>?> _ordersFuture; // REMOVE THIS LINE
-  // No longer need _userUid directly here, CartController manages it.
-  // String? _userUid; // REMOVE THIS LINE
-
-  // Define status filters (matching your backend statuses)
   final Map<String, List<int>> _statusFilters = {
     'All orders': [],
     'Processing': [2],
@@ -46,38 +38,26 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    // No longer initialize CartService here.
-    // _cartService = CartService(); // REMOVE THIS LINE
     _tabController = TabController(length: _statusFilters.length, vsync: this);
-    // No longer initialize _ordersFuture here.
-    // _ordersFuture = Future.value([]); // REMOVE THIS LINE
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Get the CartController instance
       final cartController = Provider.of<CartController>(context, listen: false);
 
-      // Check if user is available in the controller
       if (cartController.user != null) {
-        // Call the controller's method to fetch orders
         cartController.fetchUserOrders();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please log in to view your orders.')),
         );
-        // Optionally, clear orders in controller if user logs out while on screen
-        // though `fetchUserOrders` handles null user by setting _userOrders to empty.
       }
     });
 
     _tabController.addListener(_handleTabSelection);
   }
 
-  // This method now triggers the CartController to re-fetch orders.
   void _handleTabSelection() {
     if (!_tabController.indexIsChanging) {
-      // Get the CartController instance
       final cartController = Provider.of<CartController>(context, listen: false);
-      // Trigger fetch only if a user is logged in
       if (cartController.user != null) {
         cartController.fetchUserOrders();
       }
@@ -92,7 +72,6 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    // Use Consumer to listen for changes from CartController
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Orders'),
@@ -109,7 +88,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
           tabs: _statusFilters.keys.map((tabName) => Tab(text: tabName)).toList(),
         ),
       ),
-      body: Consumer<CartController>( // Use Consumer to rebuild when CartController changes
+      body: Consumer<CartController>(
         builder: (context, cartController, child) {
           if (cartController.ordersLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -118,7 +97,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
           } else if (cartController.userOrders == null || cartController.userOrders!.isEmpty) {
             return const Center(child: Text('No orders found.'));
           } else {
-            final allOrders = cartController.userOrders!; // Get orders from the controller
+            final allOrders = cartController.userOrders!;
             final String currentTabName = _statusFilters.keys.elementAt(_tabController.index);
             final List<int> currentFilterStatuses = _statusFilters[currentTabName]!;
 
@@ -138,10 +117,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
             final Map<String, List<Order>> groupedOrders = {};
             for (var order in filteredOrders) {
-              final dateKey = DateFormat('MMM d,yyyy').format(order.createdAt);
+              final dateKey = DateFormat('MMM d,yyyy').format(order.updatedAt);
               groupedOrders.putIfAbsent(dateKey, () => []).add(order);
             }
 
+            // Sort the date keys (groups) from latest to oldest
             final sortedDateKeys = groupedOrders.keys.toList()
               ..sort((a, b) => DateFormat('MMM d,yyyy').parse(b).compareTo(DateFormat('MMM d,yyyy').parse(a)));
 
@@ -150,7 +130,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
               itemCount: sortedDateKeys.length,
               itemBuilder: (context, index) {
                 final dateKey = sortedDateKeys[index];
+                // Get orders for the current date group
                 final ordersOnDate = groupedOrders[dateKey]!;
+
+                // *** NEW: Sort orders within this date group by updatedAt, latest to oldest ***
+                ordersOnDate.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -173,7 +157,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Order ID: ${order.id}',
+                                  // This now formats the order's exact time
+                                  DateFormat('MMM d,yyyy HH:mm').format(order.updatedAt),
                                   style: const TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 Text(

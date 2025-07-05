@@ -91,7 +91,7 @@ def update_order(db: Session, order_id: int, order_update: OrderUpdate):
         total_amount = _process_order_items(db, order_id, items_data)
         db_order.total_amount = str(total_amount)
 
-    db_order.updated_at = datetime.now(timezone.utc)
+    db_order.updated_at = datetime.now()
     db.commit()
     db.refresh(db_order)
     return db_order
@@ -187,7 +187,7 @@ def add_item_to_cart(db: Session, user_uid: str, product_id: int, quantity: int)
     db.commit()
     total_amount = calculate_order_total(db, cart.id)
     cart.total_amount = str(total_amount)
-    cart.updated = datetime.now(timezone.utc)
+    cart.updated = datetime.now()
     db.commit()
     db.refresh(cart)
 

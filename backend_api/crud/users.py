@@ -26,13 +26,13 @@ def create_or_update_user(db: Session, user_data: dict):
         for key, value in user_data.items():
             if value is not None and hasattr(user, key):
                 setattr(user, key, value)
-        user.updated_at = datetime.now(timezone.utc)
+        user.updated_at = datetime.now()
     else:
         # Create new user - now user_data doesn't contain 'password'
         user = User(**user_data)
         db.add(user)
     
-    user.last_login = datetime.now(timezone.utc)
+    user.last_login = datetime.now()
     db.commit()
     db.refresh(user)
     return user

@@ -222,7 +222,8 @@ class CartController extends ChangeNotifier {
       // We should also refresh the user's past orders list.
       _cart = null; // Clear the current cart
       _cartItemsWithDetails = []; // Clear detailed items
-      await fetchUserOrders(); // Refresh the list of past orders
+      await loadCart(); // Reload the cart 
+      await fetchUserOrders();
       notifyListeners(); // Notify UI that cart and orders have changed
     } catch (e) {
       // Re-throw the exception for the UI to handle messages

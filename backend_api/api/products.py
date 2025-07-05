@@ -203,7 +203,7 @@ async def delete_product(product_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Product not found")
     
     product.is_active = False
-    product.updated_at = datetime.now(timezone.utc)
+    product.updated_at = datetime.now()
     db.commit()
     
     return {"message": "Product deleted successfully"}

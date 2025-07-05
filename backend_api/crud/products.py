@@ -101,7 +101,7 @@ def update_product(db: Session, product_id: int, product_update: ProductUpdate):
             db_product_category = ProductCategory(product_id=product_id, category_id=category_id)
             db.add(db_product_category)
     
-    db_product.updated_at = datetime.now(timezone.utc)
+    db_product.updated_at = datetime.now()
     db.commit()
     db.refresh(db_product)
     return db_product
