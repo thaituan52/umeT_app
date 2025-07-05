@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
-import 'package:shopping_app/controllers/address_controller.dart';
-import 'package:shopping_app/views/login_screen.dart';
-import 'package:shopping_app/models/user.dart';
-import 'package:shopping_app/views/main_screen.dart';
+
+import '../models/user.dart';
+import '../views/login_screen.dart';
+import '../views/main_screen.dart';
 import '../controllers/cart_controller.dart';
 import '../controllers/home_controller.dart';
+import '../controllers/address_controller.dart';
 
 
 //TODO: Making it change to other user during the log session
