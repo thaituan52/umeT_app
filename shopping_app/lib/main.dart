@@ -38,6 +38,7 @@ void main() async {
         ChangeNotifierProvider<CartController>(
           create: (context) => CartController(
             cartService: context.read<CartService>(),
+            productService: context.read<ProductService>(), // Inject ProductService
           ),
         ),
         ChangeNotifierProvider<LoginController>(

@@ -12,7 +12,7 @@ import '../service/categories_service.dart';
 class HomeController extends ChangeNotifier{
 
   final CategoriesService _categoriesService;
-  final ProductService _productService;
+    final ProductService _productService;
 
   UserModel? user; 
   String _searchQuery = "search";

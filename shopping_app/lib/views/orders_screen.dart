@@ -7,6 +7,7 @@ import '../models/order.dart';
 import '../controllers/cart_controller.dart';
 import '../widgets/order_item_card.dart';
 import '../models/product.dart';
+import 'check_out_screen.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -54,7 +55,6 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
     _tabController.addListener(_handleTabSelection);
   }
-
   void _handleTabSelection() {
     if (!_tabController.indexIsChanging) {
       final cartController = Provider.of<CartController>(context, listen: false);
@@ -174,6 +174,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                             ...order.items.map((item) {
                               return FutureBuilder<Product?>(
                                 future: ProductService.getProductById(item.productId),
+                                //future: cartController.products[item.productId],
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState == ConnectionState.waiting) {
                                     return const Padding(
@@ -187,7 +188,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                   }
                                 },
                               );
-                            }).toList(),
+                            }),
                             const SizedBox(height: 8),
                             Align(
                               alignment: Alignment.centerRight,
@@ -197,22 +198,75 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(onPressed: () { /* TODO: Implement return/refund logic */ }, child: const Text('Return/Refund')),
-                                TextButton(onPressed: () { /* TODO: Implement leave a review logic */ }, child: const Text('Leave a review')),
-                                ElevatedButton(
-                                  onPressed: () { /* TODO: Implement track logic */ },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.orange,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            if (order.status == 2)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton(
+                                    onPressed: () async { 
+                                      await _handlePaymentwithStatus(order, 0); // Change status to Refunded/Cancelled
+                                    }, 
+                                    child: const Text('Return/Refund'),
                                   ),
-                                  child: const Text('Track'),
-                                ),
-                              ],
-                            ),
+                                  // TextButton(
+                                  // onPressed: () { 
+                                  //   /* TODO: Implement leave a review logic */ 
+                                  // }, 
+                                  // child: const Text('Leave a review'),
+                                  // ),
+                                  ElevatedButton(
+                                    onPressed: () async { 
+                                      await _handlePaymentwithStatus(order, 3);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    child: const Text('Received'),
+                                  ),
+                                ],
+                              )
+                            else
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      final cartController = Provider.of<CartController>(context, listen: false);
+                                      // 1. Call the new method to populate the cart with items from this order
+                                      await cartController.populateCartFromOrder(order);
+
+                                      // 2. Check for errors or success message from the controller
+                                      if (cartController.error == null) {
+                                        // 3. Navigate to the checkout screen with the populated cart
+                                        // Navigator.push(
+                                        //   context,
+                                        //   MaterialPageRoute(
+                                        //     builder: (context) => CheckoutScreen(
+                                        //       order: order,
+                                        //     ),
+                                        //   ),
+                                        // );
+                                      } else {
+                                        // Optional: Show a user-friendly error if populateCartFromOrder failed
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                          content: Text(cartController.error!),
+                                          backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    child: const Text('Reorder'),
+                                  ),
+                                ],
+                              ),
                             const Divider(),
                           ],
                         ),
@@ -227,4 +281,34 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
       ),
     );
   }
+
+    Future<void> _handlePaymentwithStatus(Order order, int status) async {
+    if (!mounted) return; // Check if the widget is still mounted before async operations
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Processing ...")),
+    );
+
+    try {
+      final cartController = Provider.of<CartController>(context, listen: false);
+
+      cartController.changingOrderStatus(
+        order.id, // Use the order ID from the widget
+        status
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Order changed successfully!")),
+      );
+      Navigator.pop(context, true); // return success flag
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to change order: ${e.toString()}")),
+      );
+      print("Error during changing order status: $e"); // For debugging
+    }
+  }
+
+
+
 }
