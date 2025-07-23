@@ -167,7 +167,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               if (_selectedAddress != null)
                 Text(
                   "${cartController.user!.displayName}\n${_selectedAddress!.address}",
