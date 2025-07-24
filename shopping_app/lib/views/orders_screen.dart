@@ -172,22 +172,18 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                             ),
                             const SizedBox(height: 8),
                             ...order.items.map((item) {
-                              return FutureBuilder<Product?>(
-                                future: ProductService.getProductById(item.productId),
-                                //future: cartController.products[item.productId],
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState == ConnectionState.waiting) {
-                                    return const Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 8.0),
-                                      child: LinearProgressIndicator(),
-                                    );
-                                  } else if (snapshot.hasError || !snapshot.hasData) {
-                                    return const Text('Product not found');
-                                  } else {
-                                    return OrderItemCard(orderItem: item, product: snapshot.data!);
-                                  }
-                                },
-                              );
+                            final Product product = cartController.products.firstWhere(
+                              (p) => p.id == item.productId,
+                            );
+
+                            // if (product == null) {
+                            //   return const Padding(
+                            //     padding: EdgeInsets.symmetric(vertical: 8.0),
+                            //     child: Text('Product not found'),
+                            //   );
+                            // }
+
+                            return OrderItemCard(orderItem: item, product: product);
                             }),
                             const SizedBox(height: 8),
                             Align(
